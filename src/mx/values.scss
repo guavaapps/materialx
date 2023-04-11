@@ -1,0 +1,77 @@
+@use "sass:color";
+
+$mx-anim-duration-short-1: 75ms;
+$mx-anim-duration-short-2: 150ms;
+$mx-anim-duration-medium-1: 200ms;
+$mx-anim-duration-medium-2: 250ms;
+$mx-anim-duration-long-1: 300ms;
+$mx-anim-duration-long-2: 350ms;
+
+$mx-elevation-on-hover: "elevation";
+$mx-overlay-on-hover: "overlay";
+$mx-elevation-overlay-on-hover: "overlay|elevation";
+$mx-none-on-hover: "none";
+
+$mx-elevation-on-pressed: "elevation";
+$mx-ripple-on-pressed: "overlay";
+$mx-elevation-ripple-overlay-on-pressed: "overlay|elevation";
+$mx-none-on-pressed: "none";
+
+//theme: pink #ff00ff
+$pink10: #380038;
+$pink20: #5b005c;
+$pink30: #810082;
+$pink40: #a800a9 !default;
+$pink50: #d200d4;
+$pink60: #fe00fd;
+$pink70: #ff74f8;
+$pink80: #ffaaf5;
+$pink90: #ffd6f6;
+
+// theme orange #ff8000
+$coral0: #000000;
+$coral10: #321300;
+$coral20: #512400;
+$coral30: #733500;
+$coral40: #974800;
+$coral50: #bd5c00;
+$coral60: #e47000;
+$coral70: #ff8d2f;
+$coral80: #ffb683;
+$coral90: #ffdbc4;
+$coral100: #ffffff;
+
+$colorPrimary: $pink40 !default;
+$colorOnPrimary: #ffffff;
+
+$colorPrimaryContainer: $pink90;
+$colorOnPrimaryContainer: $pink10;
+
+$colorSecondary: $coral40;
+$colorOnSecondary: #ffffff;
+
+$colorSecondaryContainer: $coral90;
+$colorOnSecondaryContainer: $coral10;
+
+$colorSurface: #FFFBFE;
+$colorOnSurface: #1C1B1F;
+
+$colorSurfaceVariant: #FFFBFE;
+$colorOnSurfaceVariant: #49454E;
+
+$colorError: #B3261E;
+$colorOnError: #FFFFFF;
+
+$colorErrorContainer: #F9DEDC;
+$colorOnErrorContainer: #410E0B;
+
+$colorOutline: #79747E;
+$colorOutlineVariant: #C4C7C5;
+
+$state-layer-opacity--hovered: 0.08;
+$state-layer-opacity--pressed: 0.12;
+
+$state-layer-opacity--focused: 0.12;
+$state-layer-opacity--dragged: 0.16;
+
+//

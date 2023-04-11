@@ -1,0 +1,10 @@
+.App {
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.block {
+  clip-path: polygon(0 0, 10 10,);
+}

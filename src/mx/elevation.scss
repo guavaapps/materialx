@@ -1,0 +1,193 @@
+@use "sass:math";
+@use "sass:color";
+
+$level0: 0px;
+$level1: 1px;
+$level2: 3px;
+$level3: 6px;
+$level4: 8px;
+$level5: 12px;
+
+$level0-opacity: 0;
+$level1-opacity: 0.05;
+$level2-opacity: 0.08;
+$level3-opacity: 0.11;
+$level4-opacity: 0.12;
+$level5-opacity: 0.14;
+
+@function get-elevation-overlay-color ($color, $level) {
+  $opacity: 0.08; //#{"$"}level#{$level}-opacity;
+
+  @return color.change($color, $alpha: $opacity);
+}
+
+@mixin elevation-overlay($color, $level) {
+  background-color: get-elevation-overlay-color($color, $level);
+}
+
+// elevation interpolator
+
+$KEY_UMBRA: rgba(0, 0, 0, 0.2);
+$KEY_PENUMBRA: rgba(0, 0, 0, 0.14);
+$AMBIENT: rgba(0, 0, 0, 0.12);
+
+$REFERENCE_SHADOWS: ((elevation: 0, shadows: ((0, 0, 0, 0, $KEY_UMBRA),
+        (0, 0, 0, 0, $KEY_PENUMBRA),
+        (0, 0, 0, 0, $AMBIENT),)),
+(elevation: 2, shadows: ((0, 3, 1, -2, $KEY_UMBRA),
+        (0, 2, 2, 0, $KEY_PENUMBRA),
+        (0, 1, 5, 0, $AMBIENT),)),
+(elevation: 3, shadows: ((0, 3, 3, -2, $KEY_UMBRA),
+        (0, 3, 4, 0, $KEY_PENUMBRA),
+        (0, 1, 8, 0, $AMBIENT),)),
+(elevation: 4, shadows: ((0, 2, 4, -1, $KEY_UMBRA),
+        (0, 4, 5, 0, $KEY_PENUMBRA),
+        (0, 1, 10, 0, $AMBIENT),)),
+(elevation: 6, shadows: ((0, 3, 5, -1, $KEY_UMBRA),
+        (0, 6, 10, 0, $KEY_PENUMBRA),
+        (0, 1, 18, 0, $AMBIENT),)),
+(elevation: 8, shadows: ((0, 5, 5, -3, $KEY_UMBRA),
+        (0, 8, 10, 1, $KEY_PENUMBRA),
+        (0, 3, 14, 2, $AMBIENT),)),
+(elevation: 16, shadows: ((0, 8, 10, -5, $KEY_UMBRA),
+        (0, 16, 24, 2, $KEY_PENUMBRA),
+        (0, 6, 30, 5, $AMBIENT),)));
+
+$mx-component-elevation: (
+        dialog: (24),
+        picker: (24),
+        nav-drawer: (16),
+        right-drawer: 16,
+        bottom-sheet: 16,
+        fab: 6 12 active,
+        sub-menu-3: 11,
+        sub-menu-2: 10,
+        sub-menu-1: 9,
+        menu: 8,
+        bottom-nav-bar: 8,
+        card: 2 8 hover,
+        raised-button: 2 8 active,
+        snackbar: 6,
+        app-bar: 4,
+        refresh-indicator: 3,
+        quick-entry: 2 3 active,
+        search-bar: 2 3 active,
+        switch: 1
+);
+
+@function compute-shadow-bounds ($elevation) {
+  $shadows: compute-shadow($elevation);
+
+  $s: 0;
+
+  $ts: ();
+  $ls: ();
+  $rs: ();
+  $bs: ();
+
+  @each $shadow in $shadows {
+    $x: nth($shadow, 1); // x offset
+    $y: nth($shadow, 2); // y offset
+    $b: nth($shadow, 3); // blur
+    $s: nth($shadow, 4); // spread
+
+    $left: $x - $s + ($b/2);
+    $top: $y - $s + ($b/2);
+    $right: $x + $s + ($b/2);
+    $bottom: $y + $s + ($b/2);
+
+    $ts: append($ts, $top, comma);
+    $ls: append($rs, $left, comma);
+    $rs: append($rs, $right, comma);
+    $bs: append($bs, $bottom, comma);
+  }
+
+  @warn "top(#{$ts}) left(#{$ls}) right(#{$rs}) bottom(#{$bs})";
+
+  @return (math.min($ls...), math.min($ts...), math.max($rs...), math.max($bs...));
+}
+
+@mixin bounding-box($elevation) {
+  $bounds: compute-shadow-bounds($elevation);
+
+  @warn "bounds " + $bounds;
+
+  $l: nth($bounds, 1);
+  $t: nth($bounds, 2);
+  $r: nth($bounds, 3);
+  $b: nth($bounds, 4);
+
+  margin: $l, $t, $r, $b;
+}
+
+@function findBoundingShadowSets($elevation) {
+  @if $elevation < 0 {
+    @warn "Elevation is less than zero";
+  }
+  @for $i from 1 to length($REFERENCE_SHADOWS) {
+    $lower: nth($REFERENCE_SHADOWS, $i);
+    $upper: nth($REFERENCE_SHADOWS, $i + 1);
+    @if (map-get($lower, "elevation") <=$elevation) and (map-get($upper, "elevation") > $elevation) {
+      @return ($lower, $upper);
+    }
+  }
+  $lower: nth($REFERENCE_SHADOWS, length($REFERENCE_SHADOWS) - 1);
+  $upper: nth($REFERENCE_SHADOWS, length($REFERENCE_SHADOWS));
+  @return ($lower, $upper);
+}
+
+
+@function lerp($x, $a, $b) {
+  @return $a + $x * ($b - $a);
+}
+
+
+@function lerpShadow($x, $shadow1, $shadow2) {
+  // Round all parameters, as shadow definitions do not support subpixels
+  $newX: round(lerp($x, nth($shadow1, 1), nth($shadow2, 1)))+0px;
+  $newY: round(lerp($x, nth($shadow1, 2), nth($shadow2, 2)))+0px;
+  $newBlur: round(lerp($x, nth($shadow1, 3), nth($shadow2, 3)))+0px;
+  $newSpread: round(lerp($x, nth($shadow1, 4), nth($shadow2, 4)))+0px;
+  $newColor: nth($shadow1, 5); // No need to lerp the shadow color
+  @return ($newX $newY $newBlur $newSpread $newColor);
+}
+
+
+@function compute-shadow($elevation) {
+  $bounds: findBoundingShadowSets($elevation);
+  $min: nth($bounds, 1);
+  $max: nth($bounds, 2);
+  $x: ($elevation - map-get($min, "elevation")) / (map-get($max, "elevation") - map-get($min, "elevation"));
+  $elevationShadows: ();
+  @for $i from 1 to length(map-get($min, "shadows")) + 1 {
+    $newShadow: lerpShadow($x, nth(map-get($min, "shadows"), $i), nth(map-get($max, "shadows"), $i));
+    $elevationShadows: append($elevationShadows, $newShadow, comma);
+  }
+  @return $elevationShadows;
+}
+
+@mixin mx-shadow($elevation) {
+  @if $elevation==0 {
+    box-shadow: none !important;
+  } @else {
+    box-shadow: compute-shadow($elevation);
+  }
+}
+
+
+//@for $zValue from 0 through 24 {
+//  .md-elevation-z#{$zValue} {
+//    @include mdElevation($zValue);
+//  }
+//}
+
+//@each $element, $attr in $materialElements {
+//  .md-elevation-#{$element} {
+//    @if length($attr) == 1 {
+//      @include mdElevation(nth($attr, 1));
+//    } @else {
+//      @include mdElevation(nth($attr, 1), nth($attr, 2), nth($attr, 3));
+//    }
+//  }
+//}
+

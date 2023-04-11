@@ -1,0 +1,48 @@
+//theme: pink #ff00ff
+$pink10: #380038;
+$pink20: #5b005c;
+$pink30: #810082;
+$pink40: #a800a9 !default;
+$pink50: #d200d4;
+$pink60: #fe00fd;
+$pink70: #ff74f8;
+$pink80: #ffaaf5;
+$pink90: #ffd6f6;
+
+// theme orange #ff8000
+$coral10: #3212ff;
+$coral20: #5123ff;
+$coral30: #7334ff;
+$coral40: #9747ff;
+$coral50: #bd5bff;
+$coral60: #e46fff;
+$coral70: #ff8d2e;
+$coral80: #ffb682;
+$coral90: #ffdbc3;
+
+$colorPrimary: $pink40 !default;
+$colorOnPrimary: #ffffff;
+
+$colorPrimaryContainer: $pink90;
+$colorOnPrimaryContainer: $pink10;
+
+$colorSecondary: $coral40;
+$colorOnSecondary: #ffffff;
+
+$colorSecondaryContainer: $coral90;
+$colorOnSecondaryContainer: $coral10;
+
+$colorSurface: #FFFBFE;
+$colorOnSurface: #1C1B1F;
+
+$colorSurfaceVariant: #FFFBFE;
+$colorOnSurfaceVariant: #49454E;
+
+$colorError: #B3261E;
+$colorOnError: #FFFFFF;
+
+$colorErrorContainer: #F9DEDC;
+$colorOnErrorContainer: #410E0B;
+
+$colorOutline: #79747E;
+$colorOutlineVariant: #C4C7C5;

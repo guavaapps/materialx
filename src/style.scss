@@ -1,0 +1,6 @@
+@use "values";// with ($colorPrimary: #ff8050);
+
+.link {
+  //@include theme(hotpink, red);
+  background-color: values.$colorPrimary;
+}

@@ -1,0 +1,87 @@
+@use "/src/mx/values";
+@use "../../../elevation";
+@use "/src/mx/typescale";
+@use "base";
+
+@use "sass:color";
+@use "sass:math";
+
+$mx-button--elevation-on-hover: "elevation";
+$mx-button--overlay-on-hover: "overlay";
+$mx-button--overlay-elevation-on-hover: "overlay|elevation";
+$mx-button--on-hover: $mx-button--overlay-on-hover;
+
+.filled-tonal-button-component {
+  @extend .component;
+
+  overflow: hidden;
+}
+
+.filled-tonal-button-shadow-layer {
+  @extend .shadow-layer;
+
+  @include elevation.mx-shadow(elevation.$level1);
+
+  &--hovered {
+    @include elevation.mx-shadow(elevation.$level1);
+  }
+}
+
+.filled-tonal-button-container {
+  @extend .container;
+
+  position: relative;
+
+  &--enabled {
+    background-color: values.$colorSecondaryContainer;
+  }
+
+  &--disabled {
+    $color: color.change(values.$colorOnSurface, $alpha: 0.12);
+    background-color: $color;
+  }
+
+  &--hovered {
+    @extend .filled-tonal-button-container--enabled;
+  }
+
+  &--pressed {
+    @extend .filled-tonal-button-container--enabled;
+  }
+
+  &--focused {
+    @extend .filled-tonal-button-container--enabled;
+  }
+}
+
+.filled-tonal-button-state-layer {
+  @extend .state-layer;
+
+  position: absolute;
+
+  &--hovered {
+    background-color: color.change(values.$colorOnSecondaryContainer, $alpha: values.$state-layer-opacity--hovered);
+  }
+
+  &--focused {
+    background-color: color.change(values.$colorOnSecondaryContainer, $alpha: values.$state-layer-opacity--focused);
+  }
+
+  &--pressed {
+    background-color: color.change(values.$colorOnSecondaryContainer, $alpha: values.$state-layer-opacity--pressed);
+  }
+}
+
+.filled-tonal-button-label {
+  @extend .label;
+
+  color: values.$colorOnSecondaryContainer;
+
+  &--enabled {
+    color: values.$colorOnSecondaryContainer;
+  }
+
+  &--disabled {
+    color: color.change(values.$colorOnSurface, $alpha: 0.38);
+  }
+}

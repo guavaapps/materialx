@@ -1,0 +1,84 @@
+@use "sass:math";
+
+@use "../elevation";
+
+@function compute-angular-scale ($observer, $r, $to, $size) {
+  // angular size
+  $tan: ($size / 2) / ($observer - $to);
+  $theta: math.atan(($size / 2) / ($observer - $to));
+  // scaled size
+  $scaled: 2 * ($observer - $r) * $tan; //math.tan($theta);
+  // scale
+  $scale: $scaled / $size;
+
+  @return $scale;
+}
+
+@function compute-shadow-bounds ($size, $elevation) {
+  @return $size * compute-angular-scale($mx-lfx--observer-distance, 0, $elevation, $size);
+}
+
+@function mx-lfx--compute-shadow-blur ($size, $elevation) {
+  $shadow-size: compute-shadow-bounds($size, $elevation);
+  $residue: $shadow-size - $size;
+  $blur: $residue / 2;
+
+  @return 1 * $blur;
+}
+
+$mx-behaviour--on-click-elevation: "elevation";
+$mx-behaviour--on-click-ripple: "ripple";
+$mx-behaviour--on-click-elevation-ripple: "ripple|elevation";
+$mx-behaviour--on-click-none: "none";
+$mx-behaviour--on-click: $mx-behaviour--on-click-ripple;
+
+$mx-behaviour--on-hover-elevation: "elevation";
+$mx-behaviour--on-hover-overlay: "overlay";
+$mx-behaviour--on-hover-elevation-overlay: "overlay|elevation";
+$mx-behaviour--on-hover-none: "none";
+$mx-behaviour--on-hover: $mx-behaviour--on-hover-overlay;
+
+$mx-lfx--observer-distance: 100px !default;
+$mx-lfx--shadow-radius: 0px;
+
+$mx-lfx--on-click-elevation: elevation.$level1;
+$mx-lfx--on-hover-elevation: elevation.$level1;
+
+
+@mixin lfx-shadow($size, $elevation, $color) {
+  // apply component shadow
+  @if ($elevation != elevation.$level0) {
+    $blur: 30 * mx-lfx--compute-shadow-blur($size, $elevation);
+    $spread: 30px; // * 0.5;//compute-shadow-bounds($size, $elevation);
+    box-shadow: 0px 0px $blur $spread grey;
+    //box-shadow: 100px 100px 10px 10px red;
+  }
+
+  // on hover shadow
+  @if (
+          $mx-behaviour--on-hover == $mx-behaviour--on-hover-elevation
+          or $mx-behaviour--on-hover == $mx-behaviour--on-hover-elevation-overlay
+  ) {
+    &:hover > .shadow-box {
+      $blur: mx-lfx--compute-shadow-blur($size, $mx-lfx--on-hover-elevation);
+      $scale: compute-angular-scale($mx-lfx--observer-distance, $elevation, $mx-lfx--on-hover-elevation, $size);
+
+      transform: scale($scale);
+      box-shadow: 0, 0, $mx-lfx--shadow-radius, $blur, $color;
+    }
+  }
+
+  // on click shadow
+  @if (
+          $mx-behaviour--on-click == $mx-behaviour--on-click-elevation
+          or $mx-behaviour--on-click == $mx-behaviour--on-click-elevation-ripple
+  ) {
+    &:active > .shadow-box {
+      $blur: mx-lfx--compute-shadow-blur($size, $mx-lfx--on-click-elevation);
+      $scale: compute-angular-scale($mx-lfx--observer-distance, $elevation, $mx-lfx--on-click-elevation, $size);
+
+      transform: scale($scale);
+      box-shadow: 0, 0, $mx-lfx--shadow-radius, $blur, $color;
+    }
+  }
+}
