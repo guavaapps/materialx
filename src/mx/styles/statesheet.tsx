@@ -3,6 +3,7 @@ import {State} from "../state";
 
 export abstract class Statesheet {
     [attr: string]: any
+
     enabled?: any
     disabled?: any
     pressed?: any
@@ -11,21 +12,27 @@ export abstract class Statesheet {
 
     // ky
 
-    static is (statesheet: Statesheet) {
+    static is(statesheet: Statesheet) {
         return typeof statesheet === "object" && Object.keys(statesheet).some((v) => ["enabled", "disabled", "pressed", "hovered", "focused"].includes(v))
     }
 
-    static empty(): Statesheet {
-        return {
+    static empty(withStates: string[] = []): Statesheet {
+        let states = {
             enabled: {},
             disabled: {},
             pressed: {},
             hovered: {},
             focused: {}
         }
+
+        withStates.forEach((state) => {
+            (states as AttrMap)[state] = {}
+        })
+
+        return states
     }
 
-    static valueOf (val: any) {
+    static valueOf(val: any) {
         return {
             enabled: val,
             disabled: val,
@@ -35,7 +42,7 @@ export abstract class Statesheet {
         }
     }
 
-    static wrap (statesheet: Statesheet) {
+    static wrap(statesheet: Statesheet) {
         const attrs: AttrMap = {}
         const states: AttrMap = {}
 
@@ -44,8 +51,7 @@ export abstract class Statesheet {
 
             if (typeof val === "object") {
                 states.attr = val
-            }
-            else {
+            } else {
                 attrs.attr = val
             }
         })

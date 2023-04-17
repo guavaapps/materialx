@@ -11,8 +11,9 @@ import useRipple from "../../ui/ripple/ripple";
 import {Component, Props, StyleAdapter, styled, useTheme} from "../../theme";
 import {state} from "../../values";
 import {ColorStateList} from "../../styles/colorStateList";
-import {Attr, AttrMap, Attrs, Style, Styles} from "../../style";
+import {Attr, AttrMap, Attrs, Style} from "../../style";
 import add from "../../../add.svg"
+import {Styles} from "./styles";
 
 export enum ButtonStyle {
     FILLED = "filled",
@@ -55,6 +56,8 @@ export interface ButtonProps<T extends Attrs> extends Props {
 //     return `rgba(${red}, ${green}, ${blue}, ${alpha})`
 // }
 
+
+
 export function _Button(props: ButtonProps<ButtonAttrs> = {
     label: "",
     icon: "",
@@ -76,21 +79,17 @@ export function _Button(props: ButtonProps<ButtonAttrs> = {
     const [refState, setRef] = useState(ref.current)
 
     // create statesheets
-    const styles = useMemo(() => {
+    const [styledAttrs, styles] = useMemo(() => {
+        // create styled attrs
         const styledAttrs = Style.create(style as AttrMap, theme)
 
-        console.log("style", styledAttrs)
-
-        // create statesheets from styled attrs
+        // apply styled attrs to component stylesheet
         const wrapper = StyleAdapter.wrap(ref, styledAttrs)
 
-        console.log("wrapper", wrapper)
-
-        // create css wrappers for statesheets
+        // create css stylesheets for each component layer
         const s = Object.values(Layer).map((layer) => {
             // @ts-ignore
             const containerLayer = StyleAdapter.create(wrapper[layer])
-            console.log(`layer [${layer}]`, containerLayer)
 
             const layerObj = {}
 
@@ -99,16 +98,19 @@ export function _Button(props: ButtonProps<ButtonAttrs> = {
             return layerObj
         })
 
-        return Object.assign({}, ...s)
+        return [styledAttrs, Object.assign({}, ...s)]
+
+        // reference refState to trigger redraw on component mount since component size is only available after mount
+        // refState updates with the current element holding the ref after mount
     }, [style, theme, refState])
 
     const [state, setState] = stateController
 
-    const rippleColor = theme[Attr.colorError]
+    const rippleColor = (styledAttrs as AttrMap).rippleColor
 
     const ripple = useRipple(ref, rippleColor as string)
 
-    // get statesheet for a given layer
+    // get stylesheet for a given layer
     function stateRefFor(layer: Layer) {
         return styles[layer][state]
     }
@@ -116,22 +118,31 @@ export function _Button(props: ButtonProps<ButtonAttrs> = {
     // handle state changes triggered by ui events
     const pointerEventCallback = new class extends PointerEventCallback {
         onClick(e?: PointerEvent) {
+            onClick?.(e)
         }
 
         onHover(e?: PointerEvent) {
             if (isEnabled) setState(State.STATE_HOVERED)
+
+            onHover?.(e)
         }
 
         onHoverEnd(e?: PointerEvent) {
             if (isEnabled) setState(State.STATE_ENABLED)
+
+            onHoverEnd?.(e)
         }
 
         onPressed(e?: PointerEvent) {
             if (isEnabled) setState(State.STATE_PRESSED)
+
+            onPressed?.(e)
         }
 
         onReleased(e?: PointerEvent) {
             if (isEnabled) setState(State.STATE_HOVERED)
+
+            onReleased?.(e)
         }
 
         onMoved(e?: PointerEvent) {
@@ -148,6 +159,7 @@ export function _Button(props: ButtonProps<ButtonAttrs> = {
         // TODO move focus listeners to adapter
         <button
             style={stateRefFor(Layer.COMPONENT)}
+
             onFocus={() => {
                 if (isEnabled) setState(State.STATE_FOCUSED)
             }}
@@ -166,7 +178,7 @@ export function _Button(props: ButtonProps<ButtonAttrs> = {
 
                     <span style={{
                         ...stateRefFor(Layer.ICON),
-                        maskImage: `url(${icon})`// no-repeat center`,
+                        maskImage: `url(${icon})`
                     }}></span>
 
                     <span style={stateRefFor(Layer.LABEL)}>

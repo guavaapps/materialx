@@ -11,7 +11,6 @@ import {ColorState, ColorStateList} from "./styles/colorStateList";
 import {AttrMap, Attrs, Style, StyleWrapper} from "./style";
 import {Typescale} from "./typescale/typescale";
 import {Statesheet} from "./styles/statesheet";
-import {s} from "./components/button/styles";
 
 // default themes
 export const THEME_LIGHT: Theme = {
@@ -354,7 +353,11 @@ export class StyleAdapter {
     }
 
     static wrapStatesheet (statesheet: Statesheet) {
-        const wrapped = Object.keys(Statesheet.empty()).map((state) => {
+        // check for any custom states
+        const statesheetStates = Object.keys(statesheet)
+
+        // create statesheet including custom states
+        const wrapped = Object.keys(Statesheet.empty(statesheetStates)).map((state) => {
             const attrs = statesheet[state]
 
             const obj: AttrMap = {}
@@ -365,7 +368,6 @@ export class StyleAdapter {
 
 
         const r = Object.assign({}, ...wrapped)
-        console.log("statesheet wrap", r)
 
         return r
     }
@@ -373,11 +375,11 @@ export class StyleAdapter {
     static spread(_attrs: Attrs) {
         const attrs = _attrs as AttrMap
 
+        // const statesheetStates = Object.keys(attrs)
         const states = Statesheet.empty()
 
         Object.keys(attrs).map((attr) => {
             let val = attrs[attr]
-            // console.log("ss", attr, val)
 
             if (Statesheet.is(val)) {
                 val = this.wrapStatesheet(val)
@@ -385,20 +387,22 @@ export class StyleAdapter {
                 Object.keys(val).forEach((v) => {
                     const obj: AttrMap = {}
                     obj[attr] = val[v]
-                    Object.assign(states[v], obj)
 
-                    // console.log("spreading statesheet", v, attr, val[v])
+                    if (!states[v]) states[v] = {}
+
+                    Object.assign(states[v], obj)
                 })
             } else {
                 Object.keys(states).forEach((v) => {
                     const obj: AttrMap = {}
                     obj[attr] = val
+
+                    if (!states[v]) states[v] = {}
+
                     Object.assign(states[v], obj)
                 })
             }
         })
-
-        console.log("states", states)
 
         return states
     }
@@ -406,21 +410,6 @@ export class StyleAdapter {
     //
     static create(statesheet: Statesheet, stateNames: string[] = ["enabled", "disabled", "pressed", "hovered", "focused"]): { [key: string]: any } {
         let base = this.spread(statesheet as AttrMap)
-
-        // let states = stateNames!.map((state) => {
-        //     const obj = {}
-        //
-        //     let stateObj = statesheet[state] ? statesheet[state] : this.createEmptyState(state)
-        //     stateObj = this.spread(stateObj)
-        //
-        //     // @ts-ignore
-        //     obj[state] = {
-        //         ...base,
-        //         ...stateObj
-        //     }
-        //
-        //     return obj
-        // })
 
         let r = {}
 

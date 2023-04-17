@@ -7,11 +7,12 @@ import {_Button, ButtonStyle, Button} from "./mx/components/button/button";
 import PointerEvent from "./mx/ui/event/pointer_event";
 import {StyleAdapter, styled, Theme, THEME_LIGHT} from "./mx/theme";
 import {computeShadow, createCssShadow} from "./mx/elevation";
-import {Styles} from "./mx/style";
 import logo from "./logo.svg"
 import add from "./add.svg"
 import {ColorFunction} from "./mx/styles/colorFunction";
 import {Argb} from "./mx/ui/color/Argb";
+import {Statesheet} from "./mx/styles/statesheet";
+import {Styles} from "./mx/components/button/styles";
 
 /*
 theme
