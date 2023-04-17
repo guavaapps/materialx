@@ -13,6 +13,7 @@ import {ColorFunction} from "./mx/styles/colorFunction";
 import {Argb} from "./mx/ui/color/Argb";
 import {Statesheet} from "./mx/styles/statesheet";
 import {Styles} from "./mx/components/button/styles";
+import {App as Fragment} from "./mx/theme";
 
 /*
 theme
@@ -36,7 +37,8 @@ function theme() {
         console.log(`$coral${i}: ${h}`)
     }
 }
-function decomp (int: number) {
+
+function decomp(int: number) {
     const hct = Hct.fromInt(int)
     const {hue, chroma, tone} = hct
     console.log("hct", hue, chroma, tone)
@@ -47,7 +49,9 @@ function App() {
     return (
         <div className="App">
             <div>
-                <Button isEnabled={true} icon={add} label={"Button"} style={Styles.Button.Filled}></Button>
+                <Fragment theme={THEME_LIGHT}>
+                    <Button isEnabled={true} icon={add} label={"Button"} style={Styles.Button.Filled}></Button>
+                </Fragment>
             </div>
         </div>
     );

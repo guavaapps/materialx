@@ -8,7 +8,7 @@ import {State} from "../../state";
 import {PointerEventCallback} from "../../ui/event/pointerEventCallback";
 import {ReactUiEventAdapter} from "../../ui/event/react_ui_event_adapter";
 import useRipple from "../../ui/ripple/ripple";
-import {Component, Props, StyleAdapter, styled, useTheme} from "../../theme";
+import {Component, Props, StyleAdapter, styled, THEME_LIGHT, useTheme} from "../../theme";
 import {state} from "../../values";
 import {ColorStateList} from "../../styles/colorStateList";
 import {Attr, AttrMap, Attrs, Style} from "../../style";
@@ -71,7 +71,7 @@ export function _Button(props: ButtonProps<ButtonAttrs> = {
 
     isEnabled = isEnabled || isEnabled === undefined
 
-    const theme = useTheme()
+    const theme = useTheme()!
 
     const stateController = useState(isEnabled ? State.STATE_ENABLED : State.STATE_DISABLED);
 
@@ -192,5 +192,5 @@ export function _Button(props: ButtonProps<ButtonAttrs> = {
 }
 
 export const Button = (props: ButtonProps<ButtonAttrs>) => {
-    return _Button(props)//styled(_Button, props, )
+    return styled(_Button, props)
 }

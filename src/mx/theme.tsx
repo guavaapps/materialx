@@ -1,5 +1,5 @@
-import React, {createContext, MutableRefObject, useContext} from "react"
-import {createCssShadow, Elevation} from "./elevation";
+import React, {createContext, useContext} from "react"
+import {createCssShadow} from "./elevation";
 import {Argb} from "./ui/color/Argb";
 import {
     _DefaultThemeNeutralColors as Neutral,
@@ -8,9 +8,10 @@ import {
 } from "./ui/color/ThemeUtils";
 import {State} from "./state";
 import {ColorState, ColorStateList} from "./styles/colorStateList";
-import {AttrMap, Attrs, Style, StyleWrapper} from "./style";
+import {AttrMap, Attrs, Style} from "./style";
 import {Typescale} from "./typescale/typescale";
 import {Statesheet} from "./styles/statesheet";
+import {exec} from "child_process";
 
 // default themes
 export const THEME_LIGHT: Theme = {
@@ -93,50 +94,51 @@ export abstract class Theme {
 }
 
 // theme wrappers for react context
-const ThemeProvider = createContext(THEME_LIGHT)
+const ThemeProvider = createContext<Theme | null>(null)//THEME_LIGHT)
 
 export const useTheme = () => useContext(ThemeProvider);
 
-type ThemeWrapperProps<C extends Component, P extends Props> = {
-    Component: (props: P) => C,
-    props: P,
-    styleAttrs: Attrs
-    attrs?: Attrs
+type ThemeWrapperProps = {
     theme?: Theme,
+    children?: React.ReactNode
 }
 
-export function ThemeWrapper<C extends Component, P extends Props>(wrapperProps: ThemeWrapperProps<C, P>): Component {
-    const {Component, props, theme, styleAttrs, attrs} = wrapperProps
+type AppProps = ThemeWrapperProps
+
+export function App(props: AppProps) {
+    console.log("app children", props.children)
+    return <ThemeProvider.Provider value={props.theme ? props.theme : null}>{props.children}</ThemeProvider.Provider>
+}
+
+export function ThemeWrapper(wrapperProps: ThemeWrapperProps) {
+    const {theme, children} = wrapperProps
 
     const superTheme = useTheme()
 
-    const resolvedTheme = theme ? theme : superTheme
+    if (!superTheme || theme) {
+        if (theme) {
+            console.log("overriding theme")
+            const resolvedTheme = theme ? theme : superTheme
 
-    const themeWrapper = {
-        ...React.createElement(ThemeProvider.Provider, {value: resolvedTheme}),
+            return (
+                <ThemeProvider.Provider value={resolvedTheme}>
+                    {children}
+                </ThemeProvider.Provider>
+            )
+        }
+        else throw new Error("theme not provided")
     }
 
-    const definedAttrs = attrs ? Attrs.define(styleAttrs, attrs) : styleAttrs
-    const styledAttrs = Style.create(definedAttrs, resolvedTheme)
-
-    return (
-        <ThemeProvider.Provider value={resolvedTheme}>
-            <Component {...props}></Component>
-        </ThemeProvider.Provider>
-    )
+    console.log("pushing subviews to enclosing wrapper", children)
+    return <>{children}</>
 }
 
 // apply theme
-export function styled<C extends Component, P extends Props, A extends Attrs>(
+export function styled<C extends Component, P extends Props>(
     Component: (props: P) => C, props: P,
-    styleAttrs: A, attrs?: A,
     theme?: Theme,
 ): Component {
-
-    const themeWrapper = <ThemeWrapper Component={Component} props={props} theme={theme}
-                                       styleAttrs={styleAttrs} attrs={attrs}></ThemeWrapper>
-
-    return themeWrapper
+    return <ThemeWrapper theme={theme}><Component {...props}></Component></ThemeWrapper>
 }
 
 const buttonSheet = (ref: React.RefObject<HTMLElement>, _style: Style) => {
@@ -352,7 +354,7 @@ export class StyleAdapter {
         return Object.assign({}, ...attrMap)
     }
 
-    static wrapStatesheet (statesheet: Statesheet) {
+    static wrapStatesheet(statesheet: Statesheet) {
         // check for any custom states
         const statesheetStates = Object.keys(statesheet)
 
