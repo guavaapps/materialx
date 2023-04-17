@@ -354,8 +354,6 @@ export class StyleAdapter {
     }
 
     static wrapStatesheet (statesheet: Statesheet) {
-        const enabled = statesheet.enabled
-
         const wrapped = Object.keys(Statesheet.empty()).map((state) => {
             const attrs = statesheet[state]
 
@@ -365,7 +363,11 @@ export class StyleAdapter {
             return obj
         })
 
-        console.log("statesheet wrap", wrapped)
+
+        const r = Object.assign({}, ...wrapped)
+        console.log("statesheet wrap", r)
+
+        return r
     }
 
     static spread(_attrs: Attrs) {
@@ -374,11 +376,11 @@ export class StyleAdapter {
         const states = Statesheet.empty()
 
         Object.keys(attrs).map((attr) => {
-            const val = attrs[attr]
+            let val = attrs[attr]
             // console.log("ss", attr, val)
 
             if (Statesheet.is(val)) {
-                this.wrapStatesheet(val)
+                val = this.wrapStatesheet(val)
 
                 Object.keys(val).forEach((v) => {
                     const obj: AttrMap = {}
@@ -396,13 +398,14 @@ export class StyleAdapter {
             }
         })
 
+        console.log("states", states)
+
         return states
     }
 
     //
     static create(statesheet: Statesheet, stateNames: string[] = ["enabled", "disabled", "pressed", "hovered", "focused"]): { [key: string]: any } {
-        let base = StyleAdapter.extractBase(statesheet)
-        base = this.spread(statesheet as AttrMap)
+        let base = this.spread(statesheet as AttrMap)
 
         // let states = stateNames!.map((state) => {
         //     const obj = {}
