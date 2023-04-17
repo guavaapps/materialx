@@ -10,8 +10,9 @@ import {ReactUiEventAdapter} from "../../ui/event/react_ui_event_adapter";
 import useRipple from "../../ui/ripple/ripple";
 import {Component, Props, StyleAdapter, styled, useTheme} from "../../theme";
 import {state} from "../../values";
-import {ColorStateList} from "../../colorStateList";
+import {ColorStateList} from "../../styles/colorStateList";
 import {Attr, AttrMap, Attrs, Style, Styles} from "../../style";
+import add from "../../../add.svg"
 
 export enum ButtonStyle {
     FILLED = "filled",
@@ -22,11 +23,8 @@ export enum ButtonStyle {
 }
 
 export abstract class ButtonAttrs extends Attrs {
-    abstract width?: number | string
-    abstract height?: number | string
-    abstract cornerSize?: number | number[]
-    abstract elevation?: number
-    abstract color?: ColorStateList
+    iconPaddingRight?: Attr | string | number
+    iconSize?: Attr | string | number
 }
 
 enum Layer {
@@ -35,10 +33,12 @@ enum Layer {
     CONTAINER = "container",
     LABEL = "label",
     STATE_LAYER = "stateLayer",
+    ICON = "icon"
 }
 
 export interface ButtonProps<T extends Attrs> extends Props {
     label?: string;
+    icon?: string;
     style?: T;
     isEnabled?: boolean;
     onClick?: (e?: PointerEvent) => void;
@@ -55,138 +55,13 @@ export interface ButtonProps<T extends Attrs> extends Props {
 //     return `rgba(${red}, ${green}, ${blue}, ${alpha})`
 // }
 
-export type ColorFunction = {
-    color: Attr | number | string
-    alpha: number
-}
-
-const buttonState = {
-    filled: {
-        colorStateList: {
-            enabled: {
-                backgroundColor: Attr.colorPrimary,
-                textColor: Attr.colorOnPrimary,
-            },
-            disabled: {
-                backgroundColor: {color: Attr.colorOnSurface, alpha: 0.12},
-                textColor: {color: Attr.colorOnSurface, alpha: 0.38}
-            },
-            hovered: {
-                overlayColor: {color: Attr.colorOnSurface, alpha: state.hovered.state_layer_opacity}
-            },
-            pressed: {
-                overlayColor: {color: Attr.colorOnSurface, alpha: state.pressed.state_layer_opacity}
-            },
-            focused: {
-                overlayColor: {color: Attr.colorOnSurface, alpha: state.focused.state_layer_opacity}
-            }
-        } as ColorStateList
-    },
-    filledTonal: {
-        colorStateList: {
-            enabled: {
-                backgroundColor: Attr.colorSecondaryContainer,
-                textColor: Attr.colorOnSecondaryContainer
-            },
-            disabled: {
-                backgroundColor: {color: Attr.colorOnSurface, alpha: 0.12}, //{color:Attr.colorOnSurface, 0.12),
-                textColor: {color: Attr.colorOnSurface, alpha: 0.38}
-            },
-            hovered: {
-                overlayColor: {
-                    color: Attr.colorOnSecondaryContainer, alpha: state.hovered.state_layer_opacity
-                }
-            },
-            pressed: {
-                overlayColor: {color: Attr.colorOnSecondaryContainer, alpha: state.pressed.state_layer_opacity}
-            },
-            focused: {
-                overlayColor: {color: Attr.colorOnSecondaryContainer, alpha: state.focused.state_layer_opacity}
-            },
-        }
-    },
-    text: {
-        colorStateList: {
-            enabled: {
-                textColor: Attr.colorPrimary,
-            },
-            disabled: {
-                textColor: {color: Attr.colorOnSurface, alpha: 0.38}
-            },
-            hovered: {
-                overlayColor: {color: Attr.colorPrimary, alpha: state.hovered.state_layer_opacity}
-            },
-            pressed: {
-                overlayColor: {color: Attr.colorPrimary, alpha: state.pressed.state_layer_opacity}
-            },
-            focused: {
-                overlayColor: {color: Attr.colorPrimary, alpha: state.focused.state_layer_opacity}
-            }
-        } as ColorStateList
-    },
-    outlined: {
-        colorStateList: {
-            enabled: {
-                // backgroundColor: Attr.colorPrimary,
-                textColor: Attr.colorPrimary,
-                outlineColor: Attr.colorOutline,
-            },
-            disabled: {
-                backgroundColor: {color: Attr.colorOnSurface, alpha: 0.12},
-                textColor: {color: Attr.colorOnSurface, alpha: 0.38},
-            },
-            hovered: {
-                overlayColor: {color: Attr.colorPrimary, alpha: state.hovered.state_layer_opacity}
-            },
-            pressed: {
-                overlayColor: {color: Attr.colorPrimary, alpha: state.pressed.state_layer_opacity}
-            },
-            focused: {
-                outlineColor: Attr.colorPrimary,
-                overlayColor: {color: Attr.colorPrimary, alpha: state.focused.state_layer_opacity}
-            }
-        } as ColorStateList
-    },
-}
-
-// button attrs
-const ATTRS: ButtonAttrs = {
-    width: "fit-content",
-    height: 40,
-    cornerSize: 20,
-    elevation: 0,
-    cornerStyle: "round"
-    // outlineStyle: "solid",
-    // outlineWidth: "1px"
-}
-
-const FILLED_ATTRS: ButtonAttrs = {
-    ...ATTRS,
-    color: StyleAdapter.wrapColorStateList(buttonState.filled.colorStateList)
-}
-
-const TONAL_ATTRS: ButtonAttrs = {
-    ...ATTRS,
-    color: StyleAdapter.wrapColorStateList(buttonState.filledTonal.colorStateList),
-}
-
-const TEXT_ATTRS: ButtonAttrs = {
-    ...ATTRS,
-    color: StyleAdapter.wrapColorStateList(buttonState.text.colorStateList)
-}
-
-const OUTLINED_ATTRS: ButtonAttrs = {
-    ...ATTRS,
-    color: StyleAdapter.wrapColorStateList(buttonState.outlined.colorStateList)
-}
-
-
 export function _Button(props: ButtonProps<ButtonAttrs> = {
     label: "",
+    icon: "",
     isEnabled: true,
 }): Component {
     let {
-        label, style = Styles.Button.Filled,
+        label, icon, style = Styles.Button.Filled,
         isEnabled,
         onClick, onPressed, onReleased, onHover, onHoverEnd
     } = props
@@ -204,6 +79,8 @@ export function _Button(props: ButtonProps<ButtonAttrs> = {
     const styles = useMemo(() => {
         const styledAttrs = Style.create(style as AttrMap, theme)
 
+        console.log("style", styledAttrs)
+
         // create statesheets from styled attrs
         const wrapper = StyleAdapter.wrap(ref, styledAttrs)
 
@@ -213,6 +90,7 @@ export function _Button(props: ButtonProps<ButtonAttrs> = {
         const s = Object.values(Layer).map((layer) => {
             // @ts-ignore
             const containerLayer = StyleAdapter.create(wrapper[layer])
+            console.log(`layer [${layer}]`, containerLayer)
 
             const layerObj = {}
 
@@ -226,7 +104,9 @@ export function _Button(props: ButtonProps<ButtonAttrs> = {
 
     const [state, setState] = stateController
 
-    const ripple = useRipple(ref)
+    const rippleColor = theme[Attr.colorError]
+
+    const ripple = useRipple(ref, rippleColor as string)
 
     // get statesheet for a given layer
     function stateRefFor(layer: Layer) {
@@ -260,8 +140,6 @@ export function _Button(props: ButtonProps<ButtonAttrs> = {
     }()
 
     useLayoutEffect(() => {
-        console.log("ref assigned", ref)
-
         // trigger redraw after layout
         setRef(ref.current)
     }, [])
@@ -286,12 +164,10 @@ export function _Button(props: ButtonProps<ButtonAttrs> = {
                 <span style={stateRefFor(Layer.CONTAINER)}>
                     <span style={stateRefFor(Layer.STATE_LAYER)}></span>
 
-                    {/*<span className="material-symbols-outlined" style={stateRefFor(Layer.LABEL)}>add</span>*/}
-                    <img src={"https://i.pinimg.com/originals/e9/2b/df/e92bdfc88c52c9600a9f545fbc443d4d.jpg"} style={
-                        {
-                            height: "20px"
-                        }
-                    }/>
+                    <span style={{
+                        ...stateRefFor(Layer.ICON),
+                        maskImage: `url(${icon})`// no-repeat center`,
+                    }}></span>
 
                     <span style={stateRefFor(Layer.LABEL)}>
                         {label}
@@ -304,5 +180,5 @@ export function _Button(props: ButtonProps<ButtonAttrs> = {
 }
 
 export const Button = (props: ButtonProps<ButtonAttrs>) => {
-    return styled(_Button, props, TONAL_ATTRS)
+    return _Button(props)//styled(_Button, props, )
 }

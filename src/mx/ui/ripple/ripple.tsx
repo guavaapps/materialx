@@ -1,8 +1,10 @@
 import React, {useEffect, useState} from "react";
 import "./ripple.scss"
 import ReactDOM from "react-dom/client";
+import {Attr} from "../../style";
+import {Theme} from "../../theme";
 
-const useRipple = <T extends HTMLElement>(ref: React.RefObject<T>) => {
+const useRipple = <T extends HTMLElement>(ref: React.RefObject<T>, color: string = "#ffffff") => {
     //ripples are just styles that we attach to span elements
     const [ripples, setRipples] = useState<React.CSSProperties[]>([]);
 
@@ -37,12 +39,14 @@ const useRipple = <T extends HTMLElement>(ref: React.RefObject<T>) => {
                 ]);
             };
 
+            const eventType = "pointerdown"//"click"
+
             //add an event listener to the button
-            elem.addEventListener("click", clickHandler);
+            elem.addEventListener(eventType, clickHandler);
 
             //clean up when the component is unmounted
             return () => {
-                elem.removeEventListener("click", clickHandler);
+                elem.removeEventListener(eventType, clickHandler);
             };
         }
     }, [ref, ripples]);
@@ -65,7 +69,7 @@ const useRipple = <T extends HTMLElement>(ref: React.RefObject<T>) => {
                     ...style,
                     //should be absolutely positioned
                     position: "absolute",
-                    backgroundColor: "#FFFFFF",
+                    backgroundColor: color,//"#FFFFFF",
                     opacity: "25%",
                     transform: "scale(0)",
                     // add ripple animation from styles.css

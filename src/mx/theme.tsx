@@ -7,9 +7,11 @@ import {
     _DefaultThemeSecondaryColors as Secondary
 } from "./ui/color/ThemeUtils";
 import {State} from "./state";
-import {ColorState, ColorStateList} from "./colorStateList";
+import {ColorState, ColorStateList} from "./styles/colorStateList";
 import {AttrMap, Attrs, Style, StyleWrapper} from "./style";
 import {Typescale} from "./typescale/typescale";
+import {Statesheet} from "./styles/statesheet";
+import {s} from "./components/button/styles";
 
 // default themes
 export const THEME_LIGHT: Theme = {
@@ -138,10 +140,6 @@ export function styled<C extends Component, P extends Props, A extends Attrs>(
     return themeWrapper
 }
 
-type Statesheet = {
-    [layer: string]: { [state: string]: any } | any
-}
-
 const buttonSheet = (ref: React.RefObject<HTMLElement>, _style: Style) => {
     const style = _style as AttrMap
 
@@ -165,9 +163,8 @@ const buttonSheet = (ref: React.RefObject<HTMLElement>, _style: Style) => {
         "height": StyleAdapter.resolveSize(style.height),
         "transitionDuration": "200ms",
         "userSelect": "none",
+        clipPath: "border-box",
         ...applyCorners()
-        ///clipPath: StyleAdapter.createCutCorners(ref, 10)
-        ///...radius
     }
 
     // base
@@ -181,134 +178,78 @@ const buttonSheet = (ref: React.RefObject<HTMLElement>, _style: Style) => {
         },
         container: {
             ...shape,
-            "paddingLeft": "24px",
-            "paddingRight": "24px",
-            "display": "flex",
-            "justifyContent": "center",
-            "alignItems": "center"
+            width: "fit-content",
+
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
         },
         stateLayer: {
             ...shape,
-            "width": "100%"
+            width: "100%",
         },
         label: {
             ...shape,
             ...Typescale.Label.Large,
-            "userSelect": "none",
-            "display": "flex",
-            "justifyContent": "center",
-            "alignItems": "center",
-            "cursor": "default",
-
-            "position": "relative",
+            userSelect: "none",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            cursor: "default",
+            marginLeft: style.iconPaddingRight,
+            marginRight: style.paddingRight,
+            width: "max-content",
         }
     }
 
     const button = {
         component: {
             ...base.component,
-            // "overflow": "hidden",
-            "overflow": "visible",
-
-            enabled: {},
-            disabled: {},
-            hovered: {},
-            pressed: {},
-            focused: {}
+            overflow: "visible",
         },
         shadowLayer: {
             ...base.shadowLayer,
-            "overflow": "visible",
+            overflow: "visible",
 
-            enabled: {
-                ...createCssShadow(style.elevation)
-            },
-            hovered: {
-                ...createCssShadow(style.elevation)
-            },
+            ...createCssShadow(style.elevation)
         },
 
         container: {
             ...base.container,
-            "position": "relative",
+            position: "relative",
+            overflow: "hidden",
 
-            enabled: {
-                backgroundColor: style.color.enabled.backgroundColor,
-                color: style.color.enabled.textColor,
-                borderStyle: style.outlineStyle,
-                borderWidth: style.outlineWidth,
-                borderColor: style.color.enabled.outlineColor
-            },
-            disabled: {
-                backgroundColor: style.color.enabled.backgroundColor,
-                color: style.color.enabled.textColor,
-                borderStyle: style.outlineStyle,
-                borderWidth: style.outlineStyle,
-                borderColor: style.color.enabled.outlineColor
-            },
-            hovered: {
-                backgroundColor: style.color.enabled.backgroundColor,
-                color: style.color.enabled.textColor,
-                borderStyle: style.outlineStyle,
-                borderWidth: style.outlineStyle,
-                borderColor: style.color.enabled.outlineColor
-            },
-            pressed: {
-                backgroundColor: style.color.enabled.backgroundColor,
-                color: style.color.enabled.textColor,
-                borderStyle: style.outlineStyle,
-                borderWidth: style.outlineStyle,
-                borderColor: style.color.enabled.outlineColor
-            },
-            focused: {
-                backgroundColor: style.color.enabled.backgroundColor,
-                color: style.color.enabled.textColor,
-                borderStyle: style.outlineStyle,
-                borderWidth: style.outlineStyle,
-                borderColor: style.color.enabled.outlineColor
-            }
+            backgroundColor: style.backgroundColor,
+            color: style.textColor,
+            borderStyle: style.outlineStyle,
+            borderWidth: style.outlineWidth,
+            borderColor: style.outlineColor,
         },
         stateLayer: {
             ...base.stateLayer,
-            "position": "absolute",
+            position: "absolute",
             transitionDuration: "200ms",
-
-            hovered: {
-                backgroundColor: style.color.hovered.overlayColor,
-                transitionDuration: "200ms"
-            },
-
-            focused: {
-                backgroundColor: style.color.focused.overlayColor
-            },
-            pressed: {
-                backgroundColor: style.color.pressed.overlayColor
-            },
-            enabled: {
-                backgroundColor: style.color.enabled.overlayColor
-            }
+            backgroundColor: style.overlayColor,
         },
         label: {
             ...base.label,
-            color: style.color.enabled.textColor,
+            color: style.textColor,
             borderRadius: "unset",
             clipPath: "unset",
-
-            disabled: {
-                color: style.color.disabled.textColor
-            },
-            enabled: {
-                color: style.color.enabled.textColor
-            },
-            pressed: {
-                color: style.color.pressed.textColor
-            },
-            hovered: {
-                color: style.color.hovered.textColor
-            },
-            focused: {
-                color: style.color.focused.textColor
-            }
+        },
+        icon: {
+            ...base.label,
+            color: style.textColor,
+            borderRadius: "unset",
+            clipPath: "unset",
+            width: style.iconSize,
+            height: style.iconSize,
+            maskSize: style.iconSize,
+            maskRepeat: "no-repeat",
+            maskPosition: "center",
+            marginLeft: style.paddingLeft,
+            marginRight: "0px",
+            backgroundColor: style.textColor,
         }
     }
 
@@ -412,27 +353,75 @@ export class StyleAdapter {
         return Object.assign({}, ...attrMap)
     }
 
-    //
-    static create(statesheet: Statesheet, stateNames: string[] = ["enabled", "disabled", "pressed", "hovered", "focused"]): { [key: string]: any } {
-        const base = StyleAdapter.extractBase(statesheet)
+    static wrapStatesheet (statesheet: Statesheet) {
+        const enabled = statesheet.enabled
 
-        let states = stateNames!.map((state) => {
-            const obj = {}
+        const wrapped = Object.keys(Statesheet.empty()).map((state) => {
+            const attrs = statesheet[state]
 
-            const stateObj = statesheet[state] ? statesheet[state] : this.createEmptyState(state)
-
-            // @ts-ignore
-            obj[state] = {
-                ...base,
-                ...stateObj
-            }
+            const obj: AttrMap = {}
+            obj[state] = attrs ? attrs : statesheet.enabled
 
             return obj
         })
 
+        console.log("statesheet wrap", wrapped)
+    }
+
+    static spread(_attrs: Attrs) {
+        const attrs = _attrs as AttrMap
+
+        const states = Statesheet.empty()
+
+        Object.keys(attrs).map((attr) => {
+            const val = attrs[attr]
+            // console.log("ss", attr, val)
+
+            if (Statesheet.is(val)) {
+                this.wrapStatesheet(val)
+
+                Object.keys(val).forEach((v) => {
+                    const obj: AttrMap = {}
+                    obj[attr] = val[v]
+                    Object.assign(states[v], obj)
+
+                    // console.log("spreading statesheet", v, attr, val[v])
+                })
+            } else {
+                Object.keys(states).forEach((v) => {
+                    const obj: AttrMap = {}
+                    obj[attr] = val
+                    Object.assign(states[v], obj)
+                })
+            }
+        })
+
+        return states
+    }
+
+    //
+    static create(statesheet: Statesheet, stateNames: string[] = ["enabled", "disabled", "pressed", "hovered", "focused"]): { [key: string]: any } {
+        let base = StyleAdapter.extractBase(statesheet)
+        base = this.spread(statesheet as AttrMap)
+
+        // let states = stateNames!.map((state) => {
+        //     const obj = {}
+        //
+        //     let stateObj = statesheet[state] ? statesheet[state] : this.createEmptyState(state)
+        //     stateObj = this.spread(stateObj)
+        //
+        //     // @ts-ignore
+        //     obj[state] = {
+        //         ...base,
+        //         ...stateObj
+        //     }
+        //
+        //     return obj
+        // })
+
         let r = {}
 
-        Object.assign(r, ...states)
+        Object.assign(r, base)
 
         return r
 

@@ -1,11 +1,13 @@
-import {ColorFunction} from "./components/button/button";
-import {Attr} from "./style";
+import {Attr} from "../style";
+import {ColorFunction} from "./colorFunction";
+import {Color} from "./types";
 
 export type ColorState = {
-    backgroundColor?: Attr | number | string | null | ColorFunction
+    backgroundColor?: Color
     textColor?: Attr | number | string | null | ColorFunction
     outlineColor?: Attr | number | string | null | ColorFunction
     overlayColor?: Attr | number | string | null | ColorFunction
+    rippleColor?: Attr | number | string | null | ColorFunction
 }
 
 export interface ColorStateList {

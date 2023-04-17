@@ -28,21 +28,25 @@ export class ColorUtils {
     }
 
     static hexFromInt(argb: number, useRgba = true): string {
+        let a = this.alphaFromInt(argb).toString(16).padStart(2, "0")
         let r = this.redFromInt(argb).toString(16).padStart(2, "0")
         let g = this.greenFromInt(argb).toString(16).padStart(2, "0")
         let b = this.blueFromInt(argb).toString(16).padStart(2, "0")
 
-        let c = r + g + b
+        let c = r + g + b + a
 
         return `#${c}`
     }
 
     static intFromHex(hex: string) {
+        const hasAlpha = hex.length === 9
+
+        const a = hasAlpha ? "0x" + hex[7] + hex[8] : "0xff"
         const r = "0x" + hex[1] + hex[2];
         const g = "0x" + hex[3] + hex[4];
         const b = "0x" + hex[5] + hex[6];
 
-        return new Argb(255, +r, +g, +b).toInt()
+        return new Argb(+a, +r, +g, +b).toInt()
     }
 
     static xyzFromInt(argb: number): number[] {

@@ -8,6 +8,10 @@ import PointerEvent from "./mx/ui/event/pointer_event";
 import {StyleAdapter, styled, Theme, THEME_LIGHT} from "./mx/theme";
 import {computeShadow, createCssShadow} from "./mx/elevation";
 import {Styles} from "./mx/style";
+import logo from "./logo.svg"
+import add from "./add.svg"
+import {ColorFunction} from "./mx/styles/colorFunction";
+import {Argb} from "./mx/ui/color/Argb";
 
 /*
 theme
@@ -39,18 +43,10 @@ function decomp (int: number) {
 }
 
 function App() {
-    console.log("app")
-
-    const customButtonStyle = {
-        ...Styles.Button.Filled,
-        cornerStyle: "cut",
-        cornerSize: 10
-    }
-
     return (
         <div className="App">
             <div>
-                <Button isEnabled={true} label={"this is a styled button"}></Button>
+                <Button isEnabled={true} icon={add} label={"Button"} style={Styles.Button.Filled}></Button>
             </div>
         </div>
     );
