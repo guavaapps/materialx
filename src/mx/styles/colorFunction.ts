@@ -1,5 +1,4 @@
 import {Color} from "./types"
-import {type} from "os";
 
 export abstract class ColorFunction {
     color: Color
@@ -41,7 +40,4 @@ export abstract class ColorFunction {
 
         }
     }
-}
-
-export function testCf() {
 }

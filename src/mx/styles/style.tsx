@@ -1,14 +1,11 @@
-// use for to refer to theme attributes
-import {ButtonAttrs} from "./components/button/button";
-import {Argb} from "./ui/color/Argb";
-import {ColorUtils} from "./ui/color/ColorUtils";
-import {ColorState, ColorStateList} from "./styles/colorStateList";
-import {StyleAdapter, Theme} from "./theme";
-import {state} from "./values";
-import {ColorFunction} from "./styles/colorFunction";
-import {Color, Number} from "./styles/types";
-import {Hct} from "./ui/color/Hct";
-import {Statesheet} from "./styles/statesheet";
+import {Argb} from "../ui/color/Argb";
+import {ColorUtils} from "../ui/color/ColorUtils";
+import {ColorStateList} from "./colorStateList";
+import {Theme} from "../theme";
+import {ColorFunction} from "./colorFunction";
+import {Color, Number} from "./types";
+import {Hct} from "../ui/color/Hct";
+import {Statesheet} from "./statesheet";
 
 export enum Attr {
     colorPrimary = "colorPrimary",
@@ -74,7 +71,9 @@ export abstract class Style implements AttrMap {
             const b = resolvedBlue ? resolvedBlue : argb.blue
             const a = resolvedAlpha ? resolvedAlpha : argb.alpha
 
-            return `rgba(${r}, ${g}, ${b}, ${a})`
+            return ColorUtils.hexFromInt(new Argb(a * 255, r, g, b).toInt())
+
+            //return `rgba(${r}, ${g}, ${b}, ${a})`
         } else if (this.isHctColorFunc(func)) {
             const {color, hue, chroma, tone} = func
 
@@ -126,29 +125,13 @@ export abstract class Style implements AttrMap {
             if (isRef) {
                 styledAttrs[attr] = theme[Attr[val]]
             } else if (isStatesheet) {
-                const {enabled, disabled, hovered, pressed, focused} = val as ColorStateList
-                let resolved: ColorStateList = {}
-
-                if (enabled) resolved.enabled = Style.create({enabled}, theme)["enabled" as keyof Style]
-                if (disabled) resolved.disabled = Style.create({disabled}, theme)["disabled" as keyof Style]
-                if (pressed) resolved.pressed = Style.create({pressed}, theme)["pressed" as keyof Style]
-                if (hovered) resolved.hovered = Style.create({hovered}, theme)["hovered" as keyof Style]
-                if (focused) resolved.focused = Style.create({focused}, theme)["focused" as keyof Style]
-
-                styledAttrs[attr] = resolved
-
-                //
                 const resolvedAttrs = Object.keys(val as ColorStateList).map((state) => {
                     const stateAttr = (val as AttrMap)[state]
 
-                    const styled = Style.create(Obj.withAttr<AttrMap>(state, stateAttr), theme)
-
-                    return styled
+                    return Style.create(Obj.withAttr<AttrMap>(state, stateAttr), theme)
                 })
 
                 styledAttrs[attr] = Object.assign({}, ...resolvedAttrs)
-                console.log("sattrs", styledAttrs)
-
             } else if (isColorFunction) {
                 styledAttrs[attr] = this.resolveColorFunc(val, theme)
             } else styledAttrs[attr] = val

@@ -1,27 +1,12 @@
-import "./styles/filled.scss"
-import "./styles/outlined.scss"
-import "./styles/text.scss"
-import "./styles/filled-tonal.scss"
 import React, {RefObject, useLayoutEffect, useMemo, useRef, useState} from "react";
 import PointerEvent from "../../ui/event/pointer_event";
 import {State} from "../../state";
 import {PointerEventCallback} from "../../ui/event/pointerEventCallback";
 import {ReactUiEventAdapter} from "../../ui/event/react_ui_event_adapter";
-import useRipple from "../../ui/ripple/ripple";
-import {Component, Props, StyleAdapter, styled, THEME_LIGHT, useTheme} from "../../theme";
-import {state} from "../../values";
-import {ColorStateList} from "../../styles/colorStateList";
-import {Attr, AttrMap, Attrs, Style} from "../../style";
-import add from "../../../add.svg"
+import useRipple from "../ripple/ripple";
+import {Component, Props, StyleAdapter, styled, useTheme} from "../../theme";
+import {Attr, AttrMap, Attrs, Style} from "../../styles/style";
 import {Styles} from "./styles";
-
-export enum ButtonStyle {
-    FILLED = "filled",
-    OUTLINED = "outlined",
-    TONAL = "filledTonal",
-    ELEVATED = "elevated",
-    TEXT = "text",
-}
 
 export abstract class ButtonAttrs extends Attrs {
     iconPaddingRight?: Attr | string | number
@@ -49,15 +34,6 @@ export interface ButtonProps<T extends Attrs> extends Props {
     onHoverEnd?: (e?: PointerEvent) => void;
 }
 
-// function {color:hex: string, alpha: number) {
-//     const argb = Argb.fromInt(ColorUtils.intFromHex(Attr.colorOnSurface))
-//     const {red, green, blue} = argb
-//
-//     return `rgba(${red}, ${green}, ${blue}, ${alpha})`
-// }
-
-
-
 export function _Button(props: ButtonProps<ButtonAttrs> = {
     label: "",
     icon: "",
@@ -75,7 +51,7 @@ export function _Button(props: ButtonProps<ButtonAttrs> = {
 
     const stateController = useState(isEnabled ? State.STATE_ENABLED : State.STATE_DISABLED);
 
-    const ref: RefObject<any> = useRef(null)
+    const ref = useRef<HTMLButtonElement>(null)
     const [refState, setRef] = useState(ref.current)
 
     // create statesheets
@@ -106,12 +82,14 @@ export function _Button(props: ButtonProps<ButtonAttrs> = {
 
     const [state, setState] = stateController
 
-    const rippleColor = (styledAttrs as AttrMap).rippleColor
+    const rippleColor = (styledAttrs as AttrMap).rippleColor["enabled"]//state]
 
     const ripple = useRipple(ref, rippleColor as string)
 
     // get stylesheet for a given layer
     function stateRefFor(layer: Layer) {
+        if (layer === Layer.STATE_LAYER) return {all: "unset"}
+
         return styles[layer][state]
     }
 

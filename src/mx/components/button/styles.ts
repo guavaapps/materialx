@@ -1,6 +1,6 @@
 import {ButtonAttrs} from "./button";
 import {state} from "../../values";
-import {Attr} from "../../style";
+import {Attr} from "../../styles/style";
 
 const ATTRS: ButtonAttrs = {
     width: "max-content",
@@ -29,7 +29,11 @@ const FILLED_ATTRS: ButtonAttrs = {
         pressed: {color: Attr.colorOnSurface, alpha: state.pressed.state_layer_opacity},
         focused: {color: Attr.colorOnSurface, alpha: state.focused.state_layer_opacity}
     },
-    rippleColor: Attr.colorOnPrimary
+    rippleColor: {
+        enabled: {color: Attr.colorOnPrimary, alpha: state.dragged.state_layer_opacity},
+        // hovered: "red",
+        // pressed: "red"
+    },
 }
 
 const TONAL_ATTRS: ButtonAttrs = {
@@ -46,7 +50,7 @@ const TONAL_ATTRS: ButtonAttrs = {
         hovered: {color: Attr.colorOnSecondaryContainer, alpha: state.hovered.state_layer_opacity},
         pressed: {color: Attr.colorOnSecondaryContainer, alpha: state.pressed.state_layer_opacity},
         focused: {color: Attr.colorOnSecondaryContainer, alpha: state.focused.state_layer_opacity},
-    }
+    },
 }
 
 const TEXT_ATTRS: ButtonAttrs = {

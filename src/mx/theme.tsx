@@ -8,10 +8,9 @@ import {
 } from "./ui/color/ThemeUtils";
 import {State} from "./state";
 import {ColorState, ColorStateList} from "./styles/colorStateList";
-import {AttrMap, Attrs, Style} from "./style";
+import {AttrMap, Attrs, Style} from "./styles/style";
 import {Typescale} from "./typescale/typescale";
 import {Statesheet} from "./styles/statesheet";
-import {exec} from "child_process";
 
 // default themes
 export const THEME_LIGHT: Theme = {
@@ -35,6 +34,7 @@ export const THEME_LIGHT: Theme = {
     colorSurfaceVariant: Neutral.neutral_variant99,
 }
 
+// TODO not implemented
 const THEME_DARK: Theme = {
     colorError: 0,
     colorErrorContainer: 0,
@@ -56,6 +56,7 @@ const THEME_DARK: Theme = {
     colorSurfaceVariant: 0
 }
 
+// theme is essentially a style i.e. resolved attrs
 // theme class
 export abstract class Theme {
     colorPrimary?: number | string;
@@ -105,8 +106,9 @@ type ThemeWrapperProps = {
 
 type AppProps = ThemeWrapperProps
 
+// themeable fragment, theme prop is passed down to all inner components
+// ThemeProvider wrapped for semantic reasons
 export function App(props: AppProps) {
-    console.log("app children", props.children)
     return <ThemeProvider.Provider value={props.theme ? props.theme : null}>{props.children}</ThemeProvider.Provider>
 }
 
@@ -117,7 +119,6 @@ export function ThemeWrapper(wrapperProps: ThemeWrapperProps) {
 
     if (!superTheme || theme) {
         if (theme) {
-            console.log("overriding theme")
             const resolvedTheme = theme ? theme : superTheme
 
             return (
@@ -129,7 +130,6 @@ export function ThemeWrapper(wrapperProps: ThemeWrapperProps) {
         else throw new Error("theme not provided")
     }
 
-    console.log("pushing subviews to enclosing wrapper", children)
     return <>{children}</>
 }
 
@@ -237,6 +237,7 @@ const buttonSheet = (ref: React.RefObject<HTMLElement>, _style: Style) => {
             color: style.textColor,
             borderRadius: "unset",
             clipPath: "unset",
+            transform: `scale(${style.scale})`
         },
         icon: {
             ...base.label,

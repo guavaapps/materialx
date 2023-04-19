@@ -1,4 +1,4 @@
-import {Attr} from "../style";
+import {Attr} from "./style";
 import {ColorFunction} from "./colorFunction";
 import {Statesheet} from "./statesheet";
 

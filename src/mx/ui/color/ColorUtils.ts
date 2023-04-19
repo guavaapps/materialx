@@ -27,7 +27,7 @@ export class ColorUtils {
         return ColorUtils.labFromInt(argb)[0]
     }
 
-    static hexFromInt(argb: number, useRgba = true): string {
+    static hexFromInt(argb: number): string {
         let a = this.alphaFromInt(argb).toString(16).padStart(2, "0")
         let r = this.redFromInt(argb).toString(16).padStart(2, "0")
         let g = this.greenFromInt(argb).toString(16).padStart(2, "0")

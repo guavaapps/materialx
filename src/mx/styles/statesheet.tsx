@@ -1,5 +1,4 @@
-import {Attr, AttrMap} from "../style";
-import {State} from "../state";
+import {AttrMap} from "./style";
 
 export abstract class Statesheet {
     [attr: string]: any
