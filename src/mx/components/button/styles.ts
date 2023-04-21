@@ -6,7 +6,7 @@ const ATTRS: ButtonAttrs = {
     width: "max-content",
     height: 40,
     cornerSize: 20,
-    elevation: 0,
+    elevation: 20,
     cornerStyle: "round",
     paddingRight: "24px",
     paddingLeft: "16px",
@@ -31,8 +31,6 @@ const FILLED_ATTRS: ButtonAttrs = {
     },
     rippleColor: {
         enabled: {color: Attr.colorOnPrimary, alpha: state.dragged.state_layer_opacity},
-        // hovered: "red",
-        // pressed: "red"
     },
 }
 

@@ -123,8 +123,12 @@ export abstract class Style implements AttrMap {
             const isStatesheet = Statesheet.is(val)
 
             if (isRef) {
+                // console.log(`[REF] resolving attr - name=${attr} val=${JSON.stringify(val)}]`)
+
                 styledAttrs[attr] = theme[Attr[val]]
             } else if (isStatesheet) {
+                // console.log(`[STATESHEET] resolving attr - name=${attr} val=${JSON.stringify(val)}]`)
+
                 const resolvedAttrs = Object.keys(val as ColorStateList).map((state) => {
                     const stateAttr = (val as AttrMap)[state]
 
@@ -132,7 +136,11 @@ export abstract class Style implements AttrMap {
                 })
 
                 styledAttrs[attr] = Object.assign({}, ...resolvedAttrs)
+
+                // console.log("[STATESHEET]   resolved", styledAttrs[attr])
             } else if (isColorFunction) {
+                // console.log(`[COLOR_FUNCTION] resolving attr - name=${attr} val=${JSON.stringify(val)}]`)
+
                 styledAttrs[attr] = this.resolveColorFunc(val, theme)
             } else styledAttrs[attr] = val
         }

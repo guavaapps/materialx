@@ -1,40 +1,28 @@
-import React, {RefObject, useEffect, useLayoutEffect, useRef, useState} from "react";
-import "./ripple.scss"
-import {keyboard} from "@testing-library/user-event/dist/keyboard";
-import {Button} from "../button/button";
+import React, {useEffect, useLayoutEffect, useRef, useState} from "react";
+// import "./ripple.scss"
 
-type RippleProps = {
-    left: number
-    top: number
-    width: number, height: number
-    diameter: number,
-    color: string
-}
+const createRipple = (on: HTMLElement, e: PointerEvent) => {
+    var rect = on.getBoundingClientRect();
 
-function Ripple(props: RippleProps) {
-    const {color, diameter, left, top, width, height} = props
+    var left = e.clientX - rect.left;
+    var top = e.clientY - rect.top;
+    const height = on.clientHeight;
+    const width = on.clientWidth;
 
-    return (<span
-        style={{
-            top: top - diameter / 2,
-            left: left - diameter / 2,
-            height: Math.max(width, height),
-            width: Math.max(width, height),
-            transitionDuration: "200ms",
-            transform: "scale(0.5)",
-            position: "absolute",
-            backgroundColor: color,
-            opacity: "100%",
-            borderRadius: "50%",
-        }}
-    />)
+    const diameter = Math.max(width, height);
+
+    return  {
+        top: top - diameter / 2,
+        left: left - diameter / 2,
+        width: Math.max(width, height),
+        height: Math.max(width, height),
+    }
 }
 
 const useRipple = <T extends HTMLElement>(ref: React.RefObject<T>, color: string = "#ffffff") => {
     //ripples are just styles that we attach to span elements
     const [ripples, setRipples] = useState<React.CSSProperties[]>([]);
     const rippleRef = useRef<HTMLElement>(null)
-    const [rippleTag, setRippleTag] = useState<string | null>(null)
     const [isHolding, setIsHolding] = useState(false)
 
     useLayoutEffect(() => {
@@ -43,40 +31,23 @@ const useRipple = <T extends HTMLElement>(ref: React.RefObject<T>, color: string
             const elem = ref.current;
 
             const currentRipple = rippleRef.current
-            console.log(" ")
-            console.log("new ripples size", ripples.length)
-            console.log("button children", currentRipple)
 
             //add a click handler for the ripple
-            const onDown = (e: MouseEvent) => {
-                setIsHolding(false)
-                setRippleTag(`ripple-${ripples.length}`)
+            const onDown = (e: PointerEvent) => {
+                setIsHolding(true)
 
-                //calculate the position and dimensions of the ripple.
-                //based on click position and button dimensions
-                var rect = elem.getBoundingClientRect();
-
-                var left = e.clientX - rect.left;
-                var top = e.clientY - rect.top;
-                const height = elem.clientHeight;
-                const width = elem.clientWidth;
-
-                const diameter = Math.max(width, height);
-
-                const prev = ripples[ripples.length - 1]
-                prev.top = top - diameter / 2
-                prev.left = left - diameter / 2
-                prev.width = Math.max(width, height)
-                prev.height = Math.max(width, height)
+                const prev = {
+                    ...ripples[ripples.length - 1],
+                    ...createRipple(elem, e)
+                }
 
                 setRipples([
+                    // any existing active ripples
                     ...ripples.slice(0, ripples.length - 1),
+                    // current
                     prev,
+                    // next
                     {
-                        top: top - diameter / 2,
-                        left: left - diameter / 2,
-                        height: Math.max(width, height),
-                        width: Math.max(width, height),
                         transform: "scale(0)"
                     },
                 ]);
@@ -94,11 +65,10 @@ const useRipple = <T extends HTMLElement>(ref: React.RefObject<T>, color: string
             };
 
             const onUp = (e: PointerEvent) => {
-                console.log("onUp", currentRipple)
-
                 const elemContainer = elem.children[0]
                     .children[0]
                 const cRipple = elemContainer.children[elemContainer.children.length - 2]
+                console.log("onUp", cRipple)
 
                 cRipple?.animate(
                     [{
@@ -130,7 +100,7 @@ const useRipple = <T extends HTMLElement>(ref: React.RefObject<T>, color: string
     const _debounced = useDebounce(ripples, 1000);
     useEffect(() => {
         if (_debounced.length) {
-            //if (!isHolding) setRipples([]);
+            if (!isHolding) setRipples([{transform: "scale(0)"}]);
         }
     }, [_debounced.length]);
 
@@ -153,7 +123,6 @@ const useRipple = <T extends HTMLElement>(ref: React.RefObject<T>, color: string
                     backgroundColor: color,
                     opacity: "100%",
                     borderRadius: "50%",
-                    //@ts-ignore
                     color: `rgba(${i}, 0, 0, 0.5)`,
                 }}
             />

@@ -207,6 +207,7 @@ const buttonSheet = (ref: React.RefObject<HTMLElement>, _style: Style) => {
         component: {
             ...base.component,
             overflow: "visible",
+            boxShadow: "10 10 10 10 red",
         },
         shadowLayer: {
             ...base.shadowLayer,
@@ -384,12 +385,16 @@ export class StyleAdapter {
         Object.keys(attrs).map((attr) => {
             let val = attrs[attr]
 
+            // console.log(`attr=${attr} val=${val} isStatesheet=${Statesheet.is(val)}`, val)
+
             if (Statesheet.is(val)) {
                 val = this.wrapStatesheet(val)
 
                 Object.keys(val).forEach((v) => {
                     const obj: AttrMap = {}
                     obj[attr] = val[v]
+
+                    // console.log(`   state=${v} value=${val[v]}`)
 
                     if (!states[v]) states[v] = {}
 
@@ -417,6 +422,8 @@ export class StyleAdapter {
         let r = {}
 
         Object.assign(r, base)
+
+        // console.log("css created", r)
 
         return r
 

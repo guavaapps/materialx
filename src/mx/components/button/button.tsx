@@ -59,13 +59,17 @@ export function _Button(props: ButtonProps<ButtonAttrs> = {
         // create styled attrs
         const styledAttrs = Style.create(style as AttrMap, theme)
 
-        // apply styled attrs to component stylesheet
-        const wrapper = StyleAdapter.wrap(ref, styledAttrs)
+        // create style statesheet i.e styles for different states
+        const styledStatesheet = StyleAdapter.create(styledAttrs)
 
         // create css stylesheets for each component layer
         const s = Object.values(Layer).map((layer) => {
             // @ts-ignore
-            const containerLayer = StyleAdapter.create(wrapper[layer])
+            const containerLayer = Object.assign({}, ...Object.values(State).map((it) => {
+                const obj: AttrMap = {}
+                obj[it] = StyleAdapter.wrap(ref, styledStatesheet[it])[layer as keyof object]
+                return obj
+            }))
 
             const layerObj = {}
 

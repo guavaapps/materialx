@@ -26,7 +26,7 @@ function rgba(r: number, g: number, b: number, a: number) {
 function wrapArgb(argb: Argb) {
     const {alpha, red, green, blue} = argb
 
-    return `rgba(${alpha}, ${red}, ${green}, ${blue})`
+    return `rgba(${red}, ${green}, ${blue}, ${alpha})`
 }
 
 const KEY_UMBRA = rgba(0, 0, 0, 0.2);
@@ -140,6 +140,8 @@ export function createCssShadow(elevation: number) {
             const color = v.pop()!
             return `${v.join(" ")} ${wrapArgb(Argb.fromInt(color))}`
         }).join(", ")
+
+        console.log("created box shadow", css)
 
         return {"boxShadow": css}
     }
