@@ -103,5 +103,82 @@ export const Styles = {
                 ...iconButtonAttrs,
             },
         }
+    },
+    Chip: {
+        Assist: {
+            width: "max-content",
+            height: 32,
+            cornerSize: 8,
+            cornerStyle: "round",
+            paddingRight: "8px",
+            paddingLeft: "8px",
+            iconPaddingRight: "8px",
+            iconPaddingLeft: "8px",
+            iconSize: "20px",
+            outlineStyle: "solid",
+            outlineWidth: "1px",
+
+            outlineColor: {
+                enabled: Attr.colorOutline,
+                disabled: {color: Attr.colorOnSurface, alpha: 0.12}
+            },
+
+            overlayColor: {
+                hovered: {color: Attr.colorOnSurface, alpha: state.hovered.state_layer_opacity},
+                pressed: {color: Attr.colorOnSurface, alpha: state.hovered.state_layer_opacity},
+                focused: {color: Attr.colorOnSurface, alpha: state.focused.state_layer_opacity},
+                dragged: {color: Attr.colorOnSurface, alpha: state.dragged.state_layer_opacity}
+            },
+
+            textColor: {
+                enabled: Attr.colorOnSurface,
+                disabled: {color: Attr.colorOnSurface, alpha: 0.38}
+            },
+
+            rippleColor: {color: Attr.colorOnPrimary, alpha: state.pressed.state_layer_opacity},
+        },
+
+        Filter: {
+            width: "max-content",
+            height: 32,
+            cornerSize: 8,
+            cornerStyle: "round",
+            paddingRight: "8px",
+            paddingLeft: "8px",
+            iconPaddingRight: "8px",
+            iconPaddingLeft: "8px",
+            iconSize: "20px",
+            outlineStyle: "solid",
+            outlineWidth: {
+                enabled: "1px",
+                selected: "0px"
+            },
+
+            backgroundColor: {
+                enabled: "#00000000",
+                selected: Attr.colorSecondaryContainer,
+            },
+
+            outlineColor: {
+                enabled: Attr.colorOutline,
+                selected: "#00000000",
+                disabled: {color: Attr.colorOnSurface, alpha: 0.12}
+            },
+
+            overlayColor: {
+                hovered: {color: Attr.colorOnSurface, alpha: state.hovered.state_layer_opacity},
+                pressed: {color: Attr.colorOnSurface, alpha: state.hovered.state_layer_opacity},
+                focused: {color: Attr.colorOnSurface, alpha: state.focused.state_layer_opacity},
+                dragged: {color: Attr.colorOnSurface, alpha: state.dragged.state_layer_opacity}
+            },
+
+            textColor: {
+                enabled: Attr.colorOnSurface,
+                disabled: {color: Attr.colorOnSurface, alpha: 0.38}
+            },
+
+            rippleColor: {color: Attr.colorOnPrimary, alpha: state.pressed.state_layer_opacity},
+        }
+
     }
 }

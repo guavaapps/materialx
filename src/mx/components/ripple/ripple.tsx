@@ -1,17 +1,30 @@
 import React, {useEffect, useLayoutEffect, useRef, useState} from "react";
-// import "./ripple.scss"
+
+// TODO fix ripple
+
+function allChildren(elem: Element): Element[] {
+    if (elem.children.length === 0) {
+        return [elem]
+    }
+
+    const m = Array.from(elem.children).map(it => allChildren(it)).reduce((accumulator, value) => accumulator.concat(value), []);
+
+    return [elem, ...m]
+}
 
 const createRipple = (on: HTMLElement, e: PointerEvent) => {
-    var rect = on.getBoundingClientRect();
+    const rect = on.getBoundingClientRect();
 
-    var left = e.clientX - rect.left;
-    var top = e.clientY - rect.top;
-    const height = on.clientHeight;
-    const width = on.clientWidth;
+    const left = e.clientX - rect.left;
+    const top = e.clientY - rect.top;
+    const height = rect.height//on.clientHeight;
+    const width = rect.right - rect.left//on.clientWidth;
 
     const diameter = Math.max(width, height);
 
-    return  {
+    console.log("ripple at", left, top, height, width)
+
+    return {
         top: top - diameter / 2,
         left: left - diameter / 2,
         width: Math.max(width, height),
@@ -65,10 +78,7 @@ const useRipple = <T extends HTMLElement>(ref: React.RefObject<T>, color: string
             };
 
             const onUp = (e: PointerEvent) => {
-                const elemContainer = elem.children[0]
-                    .children[0]
-                const cRipple = elemContainer.children[elemContainer.children.length - 2]
-                console.log("onUp", cRipple)
+                const cRipple = allChildren(elem).find(it => it.id === `ripple-${ripples.length - 2}`)// || cRipple
 
                 cRipple?.animate(
                     [{
@@ -100,7 +110,7 @@ const useRipple = <T extends HTMLElement>(ref: React.RefObject<T>, color: string
     const _debounced = useDebounce(ripples, 1000);
     useEffect(() => {
         if (_debounced.length) {
-            if (!isHolding) setRipples([{transform: "scale(0)"}]);
+            //if (!isHolding) setRipples([{transform: "scale(0)"}]);
         }
     }, [_debounced.length]);
 

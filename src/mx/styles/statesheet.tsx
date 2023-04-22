@@ -21,7 +21,8 @@ export abstract class Statesheet {
             disabled: {},
             pressed: {},
             hovered: {},
-            focused: {}
+            focused: {},
+            // selected: {}
         }
 
         withStates.forEach((state) => {

@@ -1,16 +1,40 @@
-import React, {useLayoutEffect, useMemo, useRef, useState} from "react";
-import PointerEvent from "../../ui/event/pointer_event";
-import {State} from "../../state";
-import {PointerEventCallback} from "../../ui/event/pointerEventCallback";
-import {ReactUiEventAdapter} from "../../ui/event/react_ui_event_adapter";
-import useRipple from "../ripple/ripple";
-import {Component, Props, StyleAdapter, styled, useTheme} from "../../theme";
-import {Attr, AttrMap, Attrs, Style} from "../../styles/style";
-import {Styles} from "./styles";
-import {Typescale} from "../../typescale/typescale";
-import {createCssShadow} from "../../elevation";
+import {Attr, AttrMap, Attrs, Style} from "../styles/style";
+import PointerEvent from "../ui/event/pointer_event";
+import {StyleAdapter, useTheme} from "../theme";
+import {RefObject, useLayoutEffect, useMemo, useRef, useState} from "react";
+import {State} from "../state";
+import useRipple from "./ripple/ripple";
+import {PointerEventCallback} from "../ui/event/pointerEventCallback";
+import {Typescale} from "../typescale/typescale";
+import {createCssShadow} from "../elevation";
+import {ReactUiEventAdapter} from "../ui/event/react_ui_event_adapter";
+import {Simulate} from "react-dom/test-utils";
+import select = Simulate.select;
 
-const _ButtonLayout = (ref: React.RefObject<HTMLElement>, _style: Style) => {
+enum Layer {
+    COMPONENT = "component",
+    SHADOW_LAYER = "shadowLayer",
+    CONTAINER = "container",
+    LABEL = "label",
+    STATE_LAYER = "stateLayer",
+    LEADING_ICON = "leadingIcon",
+    TRAILING_ICON = "trailingIcon"
+}
+
+type ChipProps = {
+    label?: string,
+    leadingIcon?: string,
+    trailingIcon?: string,
+    style?: Attrs,
+    onClick?: (e?: PointerEvent) => void;
+    onPressed?: (e?: PointerEvent) => void;
+    onReleased?: (e?: PointerEvent) => void;
+    onHover?: (e?: PointerEvent) => void;
+    onHoverEnd?: (e?: PointerEvent) => void;
+    isEnabled?: boolean
+}
+
+const _Chip = (ref: RefObject<HTMLElement>, _style: Style) => {
     const style = _style as AttrMap
 
     const radius = {
@@ -28,11 +52,12 @@ const _ButtonLayout = (ref: React.RefObject<HTMLElement>, _style: Style) => {
     }
 
     const shape = {
-        "all": "unset",
-        "width": StyleAdapter.resolveSize(style.width),
-        "height": StyleAdapter.resolveSize(style.height),
-        "transitionDuration": "200ms",
-        "userSelect": "none",
+        all: "unset",
+        display: "block",
+        width: StyleAdapter.resolveSize(style.width),
+        height: StyleAdapter.resolveSize(style.height),
+        transitionDuration: "200ms",
+        userSelect: "none",
         clipPath: "border-box",
         ...applyCorners()
     }
@@ -41,7 +66,7 @@ const _ButtonLayout = (ref: React.RefObject<HTMLElement>, _style: Style) => {
     const base = {
         component: {
             ...shape,
-            "position": "relative"
+            position: "relative"
         },
         shadowLayer: {
             ...shape,
@@ -67,20 +92,21 @@ const _ButtonLayout = (ref: React.RefObject<HTMLElement>, _style: Style) => {
             alignItems: "center",
             cursor: "default",
             marginLeft: style.iconPaddingRight,
-            marginRight: style.paddingRight,
+            marginRight: style.iconPaddingLeft,
             width: "max-content",
         }
     }
 
-    const button = {
+    return {
         component: {
             ...base.component,
             overflow: "visible",
-            boxShadow: "10 10 10 10 red",
+            clipPath: "unset"
         },
         shadowLayer: {
             ...base.shadowLayer,
             overflow: "visible",
+            clipPath: "unset",
 
             ...createCssShadow(style.elevation)
         },
@@ -109,7 +135,7 @@ const _ButtonLayout = (ref: React.RefObject<HTMLElement>, _style: Style) => {
             clipPath: "unset",
             transform: `scale(${style.scale})`
         },
-        icon: {
+        leadingIcon: {
             ...base.label,
             color: style.textColor,
             borderRadius: "unset",
@@ -122,56 +148,50 @@ const _ButtonLayout = (ref: React.RefObject<HTMLElement>, _style: Style) => {
             marginLeft: style.paddingLeft,
             marginRight: "0px",
             backgroundColor: style.textColor,
+        },
+        trailingIcon: {
+            ...base.label,
+            color: style.textColor,
+            borderRadius: "unset",
+            clipPath: "unset",
+            width: style.iconSize,
+            height: style.iconSize,
+            maskSize: style.iconSize,
+            maskRepeat: "no-repeat",
+            maskPosition: "center",
+            marginLeft: "0px",
+            marginRight: style.paddingRight,
+            backgroundColor: style.textColor,
         }
     }
-
-    return button
 }
 
-export abstract class ButtonAttrs extends Attrs {
+export abstract class ChipAttrs extends Attrs {
+    iconPaddingLeft?: Attr | string | number
     iconPaddingRight?: Attr | string | number
     iconSize?: Attr | string | number
 }
 
-enum Layer {
-    COMPONENT = "component",
-    SHADOW_LAYER = "shadowLayer",
-    CONTAINER = "container",
-    LABEL = "label",
-    STATE_LAYER = "stateLayer",
-    ICON = "icon"
-}
-
-export interface ButtonProps<T extends Attrs> extends Props {
-    label?: string;
-    icon?: string;
-    style?: T;
-    isEnabled?: boolean;
-    onClick?: (e?: PointerEvent) => void;
-    onPressed?: (e?: PointerEvent) => void;
-    onReleased?: (e?: PointerEvent) => void;
-    onHover?: (e?: PointerEvent) => void;
-    onHoverEnd?: (e?: PointerEvent) => void;
-}
-
-export function _Button(props: ButtonProps<ButtonAttrs> = {
-    label: "",
-    icon: "",
+export function Chip(props: ChipProps = {
     isEnabled: true,
-}): Component {
+    label: "",
+    leadingIcon: "",
+    trailingIcon: ""
+}) {
     let {
-        label, icon, style = Styles.Button.Filled,
+        label, leadingIcon, trailingIcon,
         isEnabled,
-        onClick, onPressed, onReleased, onHover, onHoverEnd
+        style,
+        onClick, onHover, onHoverEnd, onPressed, onReleased
     } = props
 
     isEnabled = isEnabled || isEnabled === undefined
 
     const theme = useTheme()!
 
-    const stateController = useState(isEnabled ? State.STATE_ENABLED : State.STATE_DISABLED);
+    const stateController = useState(isEnabled ? State.STATE_ENABLED : State.STATE_DISABLED)
 
-    const ref = useRef<HTMLButtonElement>(null)
+    const ref = useRef<HTMLDivElement>(null)
     const [refState, setRef] = useState(ref.current)
 
     // create statesheets
@@ -181,13 +201,14 @@ export function _Button(props: ButtonProps<ButtonAttrs> = {
 
         // create style statesheet i.e styles for different states
         const styledStatesheet = StyleAdapter.create(styledAttrs)
+        console.log("sstates", styledStatesheet)
 
         // create css stylesheets for each component layer
         const s = Object.values(Layer).map((layer) => {
             // @ts-ignore
             const containerLayer = Object.assign({}, ...Object.values(State).map((it) => {
                 const obj: AttrMap = {}
-                obj[it] = _ButtonLayout(ref, styledStatesheet[it])[layer as keyof object]
+                obj[it] = _Chip(ref, styledStatesheet[it])[layer as keyof object]
                 return obj
             }))
 
@@ -210,9 +231,40 @@ export function _Button(props: ButtonProps<ButtonAttrs> = {
 
     const ripple = useRipple(ref, rippleColor as string)
 
+    const [isSelected, setSelected] = useState(false)
+
     // get stylesheet for a given layer
     function stateRefFor(layer: Layer) {
-        if (layer === Layer.STATE_LAYER) return {all: "unset"}
+        if (isSelected) {
+            let filtered = Object.keys(styles[layer].selected).filter((it) => {
+                const val = styles[layer].selected[it]
+
+                console.log("f", it, val)
+
+                return val
+            }).map((it) => {
+                const obj: AttrMap = {}
+                obj[it] = styles[layer].selected [it]
+
+                return obj
+            })
+
+            filtered = Object.assign({}, ...filtered)
+
+            console.log("filtered", filtered)
+
+            // TODO add composite states to statesheets
+            const r = {
+                ...styles[layer][state],
+                ...filtered
+            }
+
+            if (layer === Layer.STATE_LAYER) {
+                console.log("state layer", state, styles[layer].selected)
+            }
+
+            return r
+        }
 
         return styles[layer][state]
     }
@@ -221,6 +273,12 @@ export function _Button(props: ButtonProps<ButtonAttrs> = {
     const pointerEventCallback = new class extends PointerEventCallback {
         onClick(e?: PointerEvent) {
             onClick?.(e)
+
+            if (isEnabled) {
+                console.log("setting selected")
+                //setState(state === State.STATE_SELECTED ? State.STATE_ENABLED : State.STATE_SELECTED)
+                setSelected(it => !it)
+            }
         }
 
         onHover(e?: PointerEvent) {
@@ -258,8 +316,8 @@ export function _Button(props: ButtonProps<ButtonAttrs> = {
     }, [])
 
     return (
-        // TODO move focus listeners to adapter
-        <button
+        <div
+            tabIndex={0}
             style={stateRefFor(Layer.COMPONENT)}
 
             onFocus={() => {
@@ -271,28 +329,55 @@ export function _Button(props: ButtonProps<ButtonAttrs> = {
 
             ref={ref}
 
-            // create react ui callbacks
             {...ReactUiEventAdapter.wrap(ref, pointerEventCallback)}>
-            <span
-                style={stateRefFor(Layer.SHADOW_LAYER)}>
+
+            <span style={stateRefFor(Layer.SHADOW_LAYER)}>
                 <span style={stateRefFor(Layer.CONTAINER)}>
                     <span style={stateRefFor(Layer.STATE_LAYER)}></span>
-
                     <span style={{
-                        ...stateRefFor(Layer.ICON),
-                        maskImage: `url(${icon})`
-                    }}></span>
+                        ...stateRefFor(Layer.LEADING_ICON),
+                        ...(() => {
+                            if (!leadingIcon || leadingIcon === "") {
+                                return {
+                                    width: 0,
+                                    height: 0,
+                                    maskSize: "0px"
+                                }
+                            }
+                        })(),
 
+                        ...(() => {
+                            if (!isSelected) {
+                                return {
+                                    width: 0,
+                                    height: 0,
+                                    maskSize: "0px",
+                                    alpha: 0
+                                }
+                            }
+                        })(),
+
+                        maskImage: `url(${leadingIcon})`,
+                    }}></span>
                     <span style={stateRefFor(Layer.LABEL)}>
                         {label}
                     </span>
+                    <span style={{
+                        ...stateRefFor(Layer.TRAILING_ICON),
+                        ...(() => {
+                            if (!trailingIcon || trailingIcon === "") {
+                                return {
+                                    width: 0,
+                                    height: 0,
+                                    maskSize: "0px"
+                                }
+                            }
+                        })(),
+                        maskImage: `url(${trailingIcon})`
+                    }}></span>
                     {isEnabled ? ripple : null}
                 </span>
             </span>
-        </button>
+        </div>
     )
-}
-
-export const Button = (props: ButtonProps<ButtonAttrs>) => {
-    return styled(_Button, props)
 }

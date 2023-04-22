@@ -141,8 +141,6 @@ export function createCssShadow(elevation: number) {
             return `${v.join(" ")} ${wrapArgb(Argb.fromInt(color))}`
         }).join(", ")
 
-        console.log("created box shadow", css)
-
         return {"boxShadow": css}
     }
 }

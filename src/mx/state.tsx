@@ -4,4 +4,5 @@ export enum State {
     STATE_HOVERED = "hovered",
     STATE_FOCUSED = "focused",
     STATE_PRESSED = "pressed",
+    STATE_SELECTED = "selected",
 }
