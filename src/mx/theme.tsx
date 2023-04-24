@@ -108,7 +108,7 @@ type AppProps = ThemeWrapperProps
 
 // themeable fragment, theme prop is passed down to all inner components
 // ThemeProvider wrapped for semantic reasons
-export function App(props: AppProps) {
+export function Fragment(props: AppProps) {
     return <ThemeProvider.Provider value={props.theme ? props.theme : null}>{props.children}</ThemeProvider.Provider>
 }
 

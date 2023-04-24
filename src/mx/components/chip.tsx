@@ -8,8 +8,6 @@ import {PointerEventCallback} from "../ui/event/pointerEventCallback";
 import {Typescale} from "../typescale/typescale";
 import {createCssShadow} from "../elevation";
 import {ReactUiEventAdapter} from "../ui/event/react_ui_event_adapter";
-import {Simulate} from "react-dom/test-utils";
-import select = Simulate.select;
 
 enum Layer {
     COMPONENT = "component",
@@ -17,7 +15,9 @@ enum Layer {
     CONTAINER = "container",
     LABEL = "label",
     STATE_LAYER = "stateLayer",
+    LEADING_ICON_CONTAINER = "leadingIconContainer",
     LEADING_ICON = "leadingIcon",
+    TRAILING_ICON_CONTAINER = "trailingIconContainer",
     TRAILING_ICON = "trailingIcon"
 }
 
@@ -36,6 +36,8 @@ type ChipProps = {
 
 const _Chip = (ref: RefObject<HTMLElement>, _style: Style) => {
     const style = _style as AttrMap
+
+    console.log("_Chip style", style)
 
     const radius = {
         "borderRadius": (() => {
@@ -135,6 +137,24 @@ const _Chip = (ref: RefObject<HTMLElement>, _style: Style) => {
             clipPath: "unset",
             transform: `scale(${style.scale})`
         },
+        leadingIconContainer: {
+            ...base.label,
+            color: style.textColor,
+            borderRadius: "unset",
+            width: style.iconSize,
+            height: style.iconSize,
+            maskSize: style.iconSize,
+            maskRepeat: "no-repeat",
+            maskPosition: "center",
+            marginLeft: style.paddingLeft,
+            marginRight: "0px",
+
+            position: "relative",
+            clipPath: "inset(0, 100%, 100%, 100%)",
+            mask: "unset",
+            backgroundColor: "transparent",
+        },
+
         leadingIcon: {
             ...base.label,
             color: style.textColor,
@@ -149,6 +169,25 @@ const _Chip = (ref: RefObject<HTMLElement>, _style: Style) => {
             marginRight: "0px",
             backgroundColor: style.textColor,
         },
+
+        trailingIconContainer: {
+            ...base.label,
+            color: style.textColor,
+            borderRadius: "unset",
+            width: style.iconSize,
+            height: style.iconSize,
+            maskSize: style.iconSize,
+            maskRepeat: "no-repeat",
+            maskPosition: "center",
+            marginLeft: "0px",
+            marginRight: style.paddingRight,
+
+            position: "relative",
+            clipPath: "inset(0, 100%, 100%, 100%)",
+            mask: "unset",
+            backgroundColor: "transparent",
+        },
+
         trailingIcon: {
             ...base.label,
             color: style.textColor,
@@ -170,6 +209,13 @@ export abstract class ChipAttrs extends Attrs {
     iconPaddingLeft?: Attr | string | number
     iconPaddingRight?: Attr | string | number
     iconSize?: Attr | string | number
+    chipIcon?: Attr | string
+    chipIconVisible?: Attr | boolean
+    checkedIcon?: Attr | string
+    checkedIconVisible?: Attr | boolean
+
+    closeIcon?: Attr | string
+    closeIconVisible?: Attr | boolean
 }
 
 export function Chip(props: ChipProps = {
@@ -185,7 +231,17 @@ export function Chip(props: ChipProps = {
         onClick, onHover, onHoverEnd, onPressed, onReleased
     } = props
 
+    const checkable = true
+
+    let {
+        checkedIconVisible, checkedIcon,
+        closeIconVisible, closeIcon
+    } = style as ChipAttrs
+
     isEnabled = isEnabled || isEnabled === undefined
+
+    if (checkedIconVisible) leadingIcon = checkedIcon
+    if (closeIconVisible) trailingIcon = closeIcon
 
     const theme = useTheme()!
 
@@ -199,16 +255,20 @@ export function Chip(props: ChipProps = {
         // create styled attrs
         const styledAttrs = Style.create(style as AttrMap, theme)
 
+        console.log("styled", styledAttrs)
+
         // create style statesheet i.e styles for different states
         const styledStatesheet = StyleAdapter.create(styledAttrs)
-        console.log("sstates", styledStatesheet)
+
+        console.log("statesheet", styledStatesheet)
 
         // create css stylesheets for each component layer
         const s = Object.values(Layer).map((layer) => {
             // @ts-ignore
             const containerLayer = Object.assign({}, ...Object.values(State).map((it) => {
                 const obj: AttrMap = {}
-                obj[it] = _Chip(ref, styledStatesheet[it])[layer as keyof object]
+                console.log (`log again[${it}]`, styledStatesheet[it])
+                if (styledStatesheet[it]) obj[it] = _Chip(ref, styledStatesheet[it])[layer as keyof object]
                 return obj
             }))
 
@@ -233,13 +293,13 @@ export function Chip(props: ChipProps = {
 
     const [isSelected, setSelected] = useState(false)
 
+    // if ()
+
     // get stylesheet for a given layer
     function stateRefFor(layer: Layer) {
-        if (isSelected) {
+        if (isSelected && checkable) {
             let filtered = Object.keys(styles[layer].selected).filter((it) => {
                 const val = styles[layer].selected[it]
-
-                console.log("f", it, val)
 
                 return val
             }).map((it) => {
@@ -251,8 +311,6 @@ export function Chip(props: ChipProps = {
 
             filtered = Object.assign({}, ...filtered)
 
-            console.log("filtered", filtered)
-
             // TODO add composite states to statesheets
             const r = {
                 ...styles[layer][state],
@@ -260,7 +318,6 @@ export function Chip(props: ChipProps = {
             }
 
             if (layer === Layer.STATE_LAYER) {
-                console.log("state layer", state, styles[layer].selected)
             }
 
             return r
@@ -269,13 +326,60 @@ export function Chip(props: ChipProps = {
         return styles[layer][state]
     }
 
+    function iconCheck(icon?: string) {
+        if (!icon || icon === "") {
+            return {
+                width: 0,
+                height: 0,
+                maskSize: "0px"
+            }
+        }
+    }
+
+    function leadingIconWrapper() {
+        if (!checkable) return {}
+
+        if (!isSelected) {
+            return {
+                transition: "scale 200ms linear, width 200ms linear 50ms, height 200ms linear 50ms",
+                width: 0,
+                height: 0,
+                scale: 0
+            }
+        } else {
+            return {
+                transition: "scale 200ms linear, width 200ms linear 0ms, height 200ms linear 0ms",
+                clipPath: "none",
+                overflow: "visible"
+            }
+        }
+    }
+
+    function leadingIconSelectable() {
+        if (!checkable) return {}
+
+        if (!isSelected) {
+            return {
+                transition: "opacity 50ms linear, transform 0ms linear 50ms",
+
+                opacity: 0,
+                transform: "translateX(10px)"
+            }
+        } else {
+            return {
+                transition: "opacity 50ms linear, transform 200ms linear",
+
+                opacity: 1,
+            }
+        }
+    }
+
     // handle state changes triggered by ui events
     const pointerEventCallback = new class extends PointerEventCallback {
         onClick(e?: PointerEvent) {
             onClick?.(e)
 
-            if (isEnabled) {
-                console.log("setting selected")
+            if (isEnabled && checkable) {
                 //setState(state === State.STATE_SELECTED ? State.STATE_ENABLED : State.STATE_SELECTED)
                 setSelected(it => !it)
             }
@@ -336,66 +440,18 @@ export function Chip(props: ChipProps = {
                     <span style={stateRefFor(Layer.STATE_LAYER)}></span>
 
                     <span style={{
-                        ...stateRefFor(Layer.LEADING_ICON),
-                        position: "relative",
-                        clipPath: "inset(0, 100%, 100%, 100%)",
-                        mask: "unset",
-                        backgroundColor: "transparent",
+                        ...stateRefFor(Layer.LEADING_ICON_CONTAINER),
 
-                        ...(() => {
-                            if (!isSelected) {
-                                return {
-                                    transition: "scale 200ms linear, width 200ms linear 50ms, height 200ms linear 50ms",
-                                    width: 0,
-                                    height: 0,
-                                    scale: 0
-                                }
-                            }
-                            else {
-                                return {
-                                    transition: "scale 200ms linear, width 200ms linear 0ms, height 200ms linear 0ms",
-                                    clipPath: "none",
-                                    overflow: "visible"
-                                }
-                            }
-                        })()
+                        ...iconCheck(leadingIcon),
+                        ...leadingIconWrapper()
                     }}>
                         <span id={"icon"} style={{
                             ...stateRefFor(Layer.LEADING_ICON),
-                            ...(() => {
-                                if (!leadingIcon || leadingIcon === "") {
-                                    return {
-                                        width: 0,
-                                        height: 0,
-                                        maskSize: "0px"
-                                    }
-                                }
-                            })(),
+                            ...iconCheck(leadingIcon),
 
-                            ...(() => {
-                                if (!isSelected) {
-                                    return {
-                                        // width: 0,
-                                        // height: 0,
-                                        // maskSize: "0px",
-                                        // transitionDuration: "200ms",
-                                        // position: "relative",
-                                        // clipPath: "circle(0px, 0px, 0px, 0px)",
+                            ...leadingIconSelectable(),
 
-                                        transition: "opacity 50ms linear, transform 0ms linear 50ms",
-
-                                        opacity: 0,
-                                        transform: "translateX(10px)"
-                                    }
-                                }
-                                else {
-                                    return {
-                                        transition: "opacity 50ms linear, transform 200ms linear",
-
-                                        opacity: 1,
-                                    }
-                                }
-                            })(),
+                            marginLeft: "0", // TODO separate stylesheets for icon and icon container
 
                             maskImage: `url(${leadingIcon})`,
                         }}></span>
@@ -404,19 +460,23 @@ export function Chip(props: ChipProps = {
                     <span style={stateRefFor(Layer.LABEL)}>
                         {label}
                     </span>
+
+
                     <span style={{
-                        ...stateRefFor(Layer.TRAILING_ICON),
-                        ...(() => {
-                            if (!trailingIcon || trailingIcon === "") {
-                                return {
-                                    width: 0,
-                                    height: 0,
-                                    maskSize: "0px"
-                                }
-                            }
-                        })(),
-                        maskImage: `url(${trailingIcon})`
-                    }}></span>
+                        ...stateRefFor(Layer.TRAILING_ICON_CONTAINER),
+
+                        ...iconCheck(trailingIcon),
+                        // ...leadingIconWrapper()
+                    }}>
+                        <span style={{
+                            ...stateRefFor(Layer.TRAILING_ICON),
+
+                            ...iconCheck(trailingIcon),
+
+                            maskImage: `url(${trailingIcon})`
+                        }}></span>
+                    </span>
+
                     {isEnabled ? ripple : null}
                 </span>
             </span>
