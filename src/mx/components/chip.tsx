@@ -334,31 +334,73 @@ export function Chip(props: ChipProps = {
             <span style={stateRefFor(Layer.SHADOW_LAYER)}>
                 <span style={stateRefFor(Layer.CONTAINER)}>
                     <span style={stateRefFor(Layer.STATE_LAYER)}></span>
+
                     <span style={{
                         ...stateRefFor(Layer.LEADING_ICON),
-                        ...(() => {
-                            if (!leadingIcon || leadingIcon === "") {
-                                return {
-                                    width: 0,
-                                    height: 0,
-                                    maskSize: "0px"
-                                }
-                            }
-                        })(),
+                        position: "relative",
+                        clipPath: "inset(0, 100%, 100%, 100%)",
+                        mask: "unset",
+                        backgroundColor: "transparent",
 
                         ...(() => {
                             if (!isSelected) {
                                 return {
+                                    transition: "scale 200ms linear, width 200ms linear 50ms, height 200ms linear 50ms",
                                     width: 0,
                                     height: 0,
-                                    maskSize: "0px",
-                                    alpha: 0
+                                    scale: 0
                                 }
                             }
-                        })(),
+                            else {
+                                return {
+                                    transition: "scale 200ms linear, width 200ms linear 0ms, height 200ms linear 0ms",
+                                    clipPath: "none",
+                                    overflow: "visible"
+                                }
+                            }
+                        })()
+                    }}>
+                        <span id={"icon"} style={{
+                            ...stateRefFor(Layer.LEADING_ICON),
+                            ...(() => {
+                                if (!leadingIcon || leadingIcon === "") {
+                                    return {
+                                        width: 0,
+                                        height: 0,
+                                        maskSize: "0px"
+                                    }
+                                }
+                            })(),
 
-                        maskImage: `url(${leadingIcon})`,
-                    }}></span>
+                            ...(() => {
+                                if (!isSelected) {
+                                    return {
+                                        // width: 0,
+                                        // height: 0,
+                                        // maskSize: "0px",
+                                        // transitionDuration: "200ms",
+                                        // position: "relative",
+                                        // clipPath: "circle(0px, 0px, 0px, 0px)",
+
+                                        transition: "opacity 50ms linear, transform 0ms linear 50ms",
+
+                                        opacity: 0,
+                                        transform: "translateX(10px)"
+                                    }
+                                }
+                                else {
+                                    return {
+                                        transition: "opacity 50ms linear, transform 200ms linear",
+
+                                        opacity: 1,
+                                    }
+                                }
+                            })(),
+
+                            maskImage: `url(${leadingIcon})`,
+                        }}></span>
+                    </span>
+
                     <span style={stateRefFor(Layer.LABEL)}>
                         {label}
                     </span>
