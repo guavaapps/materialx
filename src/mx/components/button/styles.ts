@@ -3,6 +3,12 @@ import {state} from "../../values";
 import {Attr, Attrs} from "../../styles/style";
 import add from "../../../add.svg"
 import checked from "../../../checked.svg"
+import {ChipAttrs} from "../chip";
+import {CheckboxAttrs} from "../checkbox";
+import ic_checked_icon from "../../res/drawable/ic_checked_icon.svg"
+import ic_checked_container from "../../res/drawable/ic_checked_container.svg"
+import ic_indeterminate_icon from "../../res/drawable/ic_indeterminate_icon.svg"
+import ic_unchecked_container from "../../res/drawable/ic_unchecked_container.svg"
 
 const ATTRS: ButtonAttrs = {
     width: "max-content",
@@ -223,5 +229,25 @@ export const Styles = {
 
             rippleColor: {color: Attr.colorOnPrimary, alpha: state.pressed.state_layer_opacity},
         },
-    }
+    },
+
+    Checkbox: {
+        width: 40,
+        height: 40,
+        iconSize: "18px",
+
+        containerChecked: ic_checked_container,
+        containerUnchecked: ic_unchecked_container,
+        iconChecked: ic_checked_icon,
+        iconIndeterminate: ic_indeterminate_icon,
+
+        backgroundColor: {
+            enabled: Attr.colorOnSurface,
+            selected: Attr.colorPrimary
+        },
+
+        iconColor: Attr.colorSurface,
+
+        rippleColor: {color: Attr.colorOnPrimary, alpha: state.pressed.state_layer_opacity}
+    } as CheckboxAttrs
 }

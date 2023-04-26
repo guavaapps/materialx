@@ -9,9 +9,10 @@ import {Styles} from "./mx/components/button/styles";
 import {Fragment} from "./mx/theme";
 import {Chip} from "./mx/components/chip";
 import {Attrs} from "./mx/styles/style";
+import {Checkbox} from "./mx/components/checkbox";
 
 let custom = {
-    ...Styles.Chip.Filter,
+    ...Styles.Checkbox,
     // checkedIcon: checked
 }
 
@@ -21,7 +22,7 @@ function App() {
             <div>
                 <Fragment theme={THEME_LIGHT}>
                     {/*<Button isEnabled={true} icon={add} label={"Button"} style={Styles.Button.Outlined}></Button>*/}
-                    <Chip label={"Chip"} leadingIcon={logo} style={custom as Attrs}></Chip>
+                    <Checkbox style={custom as Attrs}></Checkbox>
                 </Fragment>
             </div>
         </div>
