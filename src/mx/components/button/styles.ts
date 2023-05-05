@@ -9,6 +9,7 @@ import ic_checked_icon from "../../res/drawable/ic_checked_icon.svg"
 import ic_checked_container from "../../res/drawable/ic_checked_container.svg"
 import ic_indeterminate_icon from "../../res/drawable/ic_indeterminate_icon.svg"
 import ic_unchecked_container from "../../res/drawable/ic_unchecked_container.svg"
+import {TextInputFieldAttrs} from "../textInputField";
 
 const ATTRS: ButtonAttrs = {
     width: "max-content",
@@ -249,5 +250,41 @@ export const Styles = {
         iconColor: Attr.colorSurface,
 
         rippleColor: {color: Attr.colorOnPrimary, alpha: state.pressed.state_layer_opacity}
-    } as CheckboxAttrs
+    } as CheckboxAttrs,
+
+    TextInputField: {
+        Filled: {
+            width: "max-content",
+            height: 56,
+
+            minWidth: 88,
+            minHeight: 56,
+
+            maxWidth: 145,
+            maxHeight: 400,
+
+            cornerSize: [4, 4, 0, 0],
+
+            leadingIconSize: 24,
+            leadingIconColor: "red",
+
+            trailingIconSize: 24,
+            trailingIconColor: "red",
+
+            paddingLeft: 12,
+            paddingRight: 12,
+
+            backgroundColor: {
+                enabled: Attr.colorSurfaceVariant,
+                disabled: {color: Attr.colorOnSurface, alpha: 0.4}
+            },
+
+            activeIndicatorColor: {
+                enabled: Attr.colorPrimary
+            },
+
+            rippleColor: {color: Attr.colorOnPrimary, alpha: state.pressed.state_layer_opacity}
+
+        } as TextInputFieldAttrs
+    }
 }

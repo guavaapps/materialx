@@ -6,6 +6,7 @@ import {ColorFunction} from "./colorFunction";
 import {Color, Number} from "./types";
 import {Hct} from "../ui/color/Hct";
 import {Statesheet} from "./statesheet";
+import {Shapeable, Sizeable} from "../components/Props";
 
 export enum Attr {
     colorPrimary = "colorPrimary",
@@ -151,9 +152,14 @@ export abstract class Style implements AttrMap {
         return styledAttrs as Style
     }
 } // unresolved refs
+
 export abstract class Attrs {
     abstract width?: Number
     abstract height?: Number
+    abstract minWidth?: Number
+    abstract minHeight?: Number
+    abstract maxWidth?: Number
+    abstract maxHeight?: Number
     abstract cornerSize?: Number
     abstract cornerStyle?: Attr | "round" | "cut" | Statesheet
     abstract elevation?: number | Attr | Statesheet

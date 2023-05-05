@@ -134,6 +134,7 @@ const useRipple = <T extends HTMLElement>(ref: React.RefObject<T>, color: string
                     opacity: "100%",
                     borderRadius: "50%",
                     color: `rgba(${i}, 0, 0, 0.5)`,
+                    pointerEvents: "none",
                 }}
             />
         );

@@ -8,6 +8,7 @@ import {PointerEventCallback} from "../ui/event/pointerEventCallback";
 import {Typescale} from "../typescale/typescale";
 import {createCssShadow} from "../elevation";
 import {ReactUiEventAdapter} from "../ui/event/react_ui_event_adapter";
+import {Statesheet} from "../styles/statesheet";
 
 const _Chip = (ref: RefObject<HTMLElement>, _style: Style) => {
     const style = _style as AttrMap
@@ -299,10 +300,12 @@ export function Chip(props: ChipProps = {
     function stateRefFor(layer: Layer) {
         if (isSelected && checkable) {
             let filtered = Object.keys(styles[layer].selected).filter((it) => {
-                return styles[layer].selected[it]
+                const val = styles[layer].selected[it]
+
+                return val
             }).map((it) => {
                 const obj: AttrMap = {}
-                obj[it] = styles[layer].selected[it]
+                obj[it] = styles[layer].selected [it]
 
                 return obj
             })

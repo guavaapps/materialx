@@ -10,10 +10,10 @@ import {Fragment} from "./mx/theme";
 import {Chip} from "./mx/components/chip";
 import {Attrs} from "./mx/styles/style";
 import {Checkbox} from "./mx/components/checkbox";
+import {TextInputFiled} from "./mx/components/textInputField";
 
 let custom = {
-    ...Styles.Checkbox,
-    // checkedIcon: checked
+    ...Styles.TextInputField.Filled,
 }
 
 function App() {
@@ -22,7 +22,7 @@ function App() {
             <div>
                 <Fragment theme={THEME_LIGHT}>
                     {/*<Button isEnabled={true} icon={add} label={"Button"} style={Styles.Button.Outlined}></Button>*/}
-                    <Checkbox style={custom as Attrs}></Checkbox>
+                    <TextInputFiled leadingIcon={add} style={custom as Attrs} label={"Chip"}></TextInputFiled>
                 </Fragment>
             </div>
         </div>
