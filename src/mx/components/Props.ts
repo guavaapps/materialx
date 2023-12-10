@@ -1,15 +1,9 @@
-import PointerEvent from "../ui/event/pointer_event";
+import {FocusEvent, KeyboardEvent, PointerEvent} from "../ui/event/pointer_event";
 import {Attr, Attrs} from "../styles/style";
 import {Number} from "../styles/types";
 import {Statesheet} from "../styles/statesheet";
-
-export type WithPointerEvents = {
-    onClick?: (e?: PointerEvent) => void;
-    onPressed?: (e?: PointerEvent) => void;
-    onReleased?: (e?: PointerEvent) => void;
-    onHover?: (e?: PointerEvent) => void;
-    onHoverEnd?: (e?: PointerEvent) => void;
-}
+import React from "react";
+import {LayoutParams} from "../layout/layout";
 
 export abstract class Sizeable {
     abstract width?: Number
@@ -25,4 +19,40 @@ export abstract class Sizeable {
 export interface Shapeable {
     cornerSize?: Number
     cornerStyle?: Attr | "round" | "cut" | Statesheet
+}
+
+export type Size = number | "MATCH_PARENT" | "WRAP_CONTENT" | "MATCH_CONSTRAINT"
+
+export type ComponentProps = {
+    id?: string,
+    children?: React.ReactNode
+
+    x?: number
+    y?: number
+    width?: number,
+    height?: number,
+    layoutParams?: LayoutParams
+}
+
+export type Clickable = {
+    onClick?: (e?: PointerEvent) => boolean;
+    onPressed?: (e?: PointerEvent) => boolean;
+    onReleased?: (e?: PointerEvent) => boolean;
+    onHover?: (e?: PointerEvent) => boolean;
+    onHoverEnd?: (e?: PointerEvent) => boolean;
+    onMoved?: (e?: PointerEvent) => boolean;
+}
+
+export type WithKeyboardEvents = {
+    onKeyPressed?: (e?: KeyboardEvent) => boolean;
+    onKeyReleased?: (e?: KeyboardEvent) => boolean;
+}
+
+export type Focusable = {
+    onFocused?: (e?: FocusEvent) => boolean;
+    onUnfocused?: (e?: Focusable) => boolean;
+}
+
+export type Styleable = {
+
 }

@@ -1,5 +1,5 @@
 import React, {useLayoutEffect, useMemo, useRef, useState} from "react";
-import PointerEvent from "../../ui/event/pointer_event";
+import {PointerEvent} from "../../ui/event/pointer_event";
 import {State} from "../../state";
 import {PointerEventCallback} from "../../ui/event/pointerEventCallback";
 import {ReactUiEventAdapter} from "../../ui/event/react_ui_event_adapter";
@@ -180,7 +180,7 @@ export function _Button(props: ButtonProps<ButtonAttrs> = {
         const styledAttrs = Style.create(style as AttrMap, theme)
 
         // create style statesheet i.e styles for different states
-        const styledStatesheet = StyleAdapter.create(styledAttrs)
+        const [styledStatesheet, states] = StyleAdapter.create(styledAttrs)
 
         // create css stylesheets for each component layer
         const s = Object.values(Layer).map((layer) => {
@@ -218,39 +218,39 @@ export function _Button(props: ButtonProps<ButtonAttrs> = {
     }
 
     // handle state changes triggered by ui events
-    const pointerEventCallback = new class extends PointerEventCallback {
+    const pointerEventCallback = {
         onClick(e?: PointerEvent) {
             onClick?.(e)
-        }
+        },
 
         onHover(e?: PointerEvent) {
             if (isEnabled) setState(State.STATE_HOVERED)
 
             onHover?.(e)
-        }
+        },
 
         onHoverEnd(e?: PointerEvent) {
             if (isEnabled) setState(State.STATE_ENABLED)
 
             onHoverEnd?.(e)
-        }
+        },
 
         onPressed(e?: PointerEvent) {
             if (isEnabled) setState(State.STATE_PRESSED)
 
             onPressed?.(e)
-        }
+        },
 
         onReleased(e?: PointerEvent) {
             if (isEnabled) setState(State.STATE_HOVERED)
 
             onReleased?.(e)
-        }
+        },
 
         onMoved(e?: PointerEvent) {
 
         }
-    }()
+    }
 
     useLayoutEffect(() => {
         // trigger redraw after layout
@@ -271,7 +271,7 @@ export function _Button(props: ButtonProps<ButtonAttrs> = {
 
             ref={ref}
 
-            // create react ui callbacks
+            // @ts-ignore
             {...ReactUiEventAdapter.wrap(ref, pointerEventCallback)}>
             <span
                 style={stateRefFor(Layer.SHADOW_LAYER)}>

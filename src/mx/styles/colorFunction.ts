@@ -1,4 +1,8 @@
 import {Color} from "./types"
+import {Argb} from "../ui/color/Argb";
+import {ColorUtils} from "../ui/color/ColorUtils";
+import {Hct} from "../ui/color/Hct";
+import {Attrs} from "./style";
 
 export abstract class ColorFunction {
     color: Color
@@ -23,21 +27,84 @@ export abstract class ColorFunction {
         return "hct"
     }
 
-    private isArgb() {
-        return "color" in this && Object.keys(this).some((v) => ["red", "green", "blue", "alpha",].includes(v))
+    static isArgb(func: ColorFunction) {
+        return "color" in func && Object.keys(func).some((v) => ["red", "green", "blue", "alpha",].includes(v))
     }
 
-    private isHct() {
-        return "color" in this && Object.keys(this).some((v) => ["hue", "chroma", "tone"].includes(v))
+    static isHct(func: ColorFunction) {
+        return "color" in func && Object.keys(func).some((v) => ["hue", "chroma", "tone"].includes(v))
+    }
+
+    static isValid (func: ColorFunction) {
+        return !(this.isArgb(func) && this.isHct(func))
     }
 
     static resolve(colorFunction: ColorFunction) {
-        const type = colorFunction.colorSpace
+        if (!ColorFunction.isValid(colorFunction)) throw new Error("cfnv")
 
-        if (colorFunction.isArgb()) {
+        const int = this.resolveColor(colorFunction.color)
+        console.log("int", int)
 
-        } else if (type === "hct") {
+        if (this.isArgb(colorFunction)) {
+            const argb = Argb.fromInt(int || 0)
+            console.log("argb", argb)
 
+            let a = ColorFunction.resolveColor(colorFunction.alpha)
+            argb.alpha = (a !== null) ? a! : argb.alpha
+
+            let r = ColorFunction.resolveColor(colorFunction.red)
+            argb.red = (r !== null) ? r! : argb.red
+
+            let g = ColorFunction.resolveColor(colorFunction.green)
+            argb.green = (g !== null) ? g! : argb.green
+
+            let b = ColorFunction.resolveColor(colorFunction.blue)
+            argb.blue = (b !== null) ? b! : argb.blue
+
+            console.log("new argb", argb)
+
+            return argb.toInt()
+
+        } else if (this.isHct(colorFunction)) {
+            const hct = Hct.fromInt(int || 0)
+
+            let h = colorFunction.hue
+            hct.hue = (h !== undefined) ? h! as number : hct.hue
+
+            let c = colorFunction.chroma
+            hct.chroma = (c !== undefined) ? c! as number : hct.chroma
+
+            let t = colorFunction.tone
+            hct.tone = (t !== undefined) ? t! as number : hct.tone
+
+            console.log("new hct", hct)
+
+            return hct.toInt()
+        }
+    }
+
+    static resolveNumber (n: Number) {
+        switch (typeof n) {
+            case "number":
+            case undefined:
+            case null:
+                return n
+        }
+    }
+
+    static resolveColor (c: Color): number | null | undefined {
+        switch (typeof c) {
+            case "string":
+                return ColorUtils.intFromHex(c)
+
+            case "number":
+                return c
+
+            case "object":
+                return ColorFunction.resolveColor(c)
+
+            default:
+                return null
         }
     }
 }

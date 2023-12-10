@@ -1,17 +1,13 @@
-import {ButtonAttrs} from "./button";
 import {state} from "../../values";
 import {Attr, Attrs} from "../../styles/style";
 import add from "../../../add.svg"
 import checked from "../../../checked.svg"
-import {ChipAttrs} from "../chip";
-import {CheckboxAttrs} from "../checkbox";
 import ic_checked_icon from "../../res/drawable/ic_checked_icon.svg"
 import ic_checked_container from "../../res/drawable/ic_checked_container.svg"
 import ic_indeterminate_icon from "../../res/drawable/ic_indeterminate_icon.svg"
 import ic_unchecked_container from "../../res/drawable/ic_unchecked_container.svg"
-import {TextInputFieldAttrs} from "../textInputField";
 
-const ATTRS: ButtonAttrs = {
+const ATTRS = {
     width: "max-content",
     height: 40,
     cornerSize: 20,
@@ -23,7 +19,7 @@ const ATTRS: ButtonAttrs = {
     iconSize: "20px"
 }
 
-const FILLED_ATTRS: ButtonAttrs = {
+const FILLED_ATTRS = {
     ...ATTRS,
     backgroundColor: {
         enabled: Attr.colorPrimary,
@@ -43,7 +39,7 @@ const FILLED_ATTRS: ButtonAttrs = {
     },
 }
 
-const TONAL_ATTRS: ButtonAttrs = {
+const TONAL_ATTRS = {
     ...ATTRS,
     backgroundColor: {
         enabled: Attr.colorSecondaryContainer,
@@ -60,15 +56,15 @@ const TONAL_ATTRS: ButtonAttrs = {
     },
 }
 
-const TEXT_ATTRS: ButtonAttrs = {
+const TEXT_ATTRS = {
     ...ATTRS,
 }
 
-const OUTLINED_ATTRS: ButtonAttrs = {
+const OUTLINED_ATTRS = {
     ...ATTRS,
 }
 
-const iconButtonAttrs: ButtonAttrs = {
+const iconButtonAttrs = {
     ...ATTRS,
     width: "40px",
     paddingLeft: "8px",
@@ -250,7 +246,7 @@ export const Styles = {
         iconColor: Attr.colorSurface,
 
         rippleColor: {color: Attr.colorOnPrimary, alpha: state.pressed.state_layer_opacity}
-    } as CheckboxAttrs,
+    },
 
     TextInputField: {
         Filled: {
@@ -285,7 +281,7 @@ export const Styles = {
 
             rippleColor: {color: Attr.colorOnPrimary, alpha: state.pressed.state_layer_opacity}
 
-        } as TextInputFieldAttrs
+        }
     },
 
     TextView: {

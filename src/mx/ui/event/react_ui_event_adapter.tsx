@@ -1,8 +1,7 @@
-import {PointerEventCallback} from "./pointerEventCallback";
+import {KeyboardEventCallback, PointerEventCallback} from "./pointerEventCallback";
 import React, {Dispatch, MutableRefObject, SetStateAction} from "react";
 import {State} from "../../state";
-import PointerEvent from "./pointer_event";
-import Pointer_event from "./pointer_event";
+import {PointerEvent, KeyboardEvent, KeyVariant} from "./pointer_event";
 
 export class ReactUiEventAdapter {
     static wrap(ref: MutableRefObject<any>, callback: PointerEventCallback) {
@@ -30,6 +29,22 @@ export class ReactUiEventAdapter {
             onPointerMove: (e: React.MouseEvent) => {
                 if (callback.onMoved) callback.onMoved(PointerEvent.create(ref, e))
             },
+        }
+    }
+
+    static wrapKeyboardEvent (callback: KeyboardEventCallback) {
+        return {
+            onKeyDown (e: React.KeyboardEvent) {
+                if (callback.onKeyPressed) {
+                    callback.onKeyPressed(KeyboardEvent.create(e))
+                }
+            },
+
+            onKeyUp (e: React.KeyboardEvent) {
+                if (callback.onKeyReleased) {
+                    callback.onKeyReleased(KeyboardEvent.create(e))
+                }
+            }
         }
     }
 }

@@ -1,6 +1,6 @@
 import React, {MutableRefObject} from "react";
 
-abstract class PointerEvent {
+export abstract class PointerEvent {
     viewX? = 0
     viewY? = 0
     x? = 0
@@ -9,12 +9,14 @@ abstract class PointerEvent {
     rawX? = 0
     rawY? = 0
 
+    clickCount? = 0
+
     altPressed? = false
     controlPressed? = false
     metaPressed? = false
     shiftPressed? = false
 
-    static create (ref: MutableRefObject<any>, e: React.MouseEvent) {
+    static create(ref: MutableRefObject<any>, e: React.MouseEvent) {
         const boundingBox = ref.current.getBoundingClientRect()
 
         return {
@@ -27,6 +29,8 @@ abstract class PointerEvent {
             rawX: e.pageX,
             rawY: e.pageY,
 
+            clickCount: e.detail,
+
             shiftPressed: e.shiftKey,
             altPressed: e.altKey,
             controlPressed: e.ctrlKey,
@@ -35,4 +39,73 @@ abstract class PointerEvent {
     }
 }
 
-export default PointerEvent;
+export class KeyVariant {
+    static STANDARD = "STANDARD"
+    static LEFT = "LEFT"
+    static RIGHT = "RIGHT"
+    static NUMPAD = "NUMPAD"
+    static MOBILE = "MOBILE"
+    static JOYSTICK = "JOYSTICK"
+}
+
+export abstract class KeyboardEvent {
+    key?: string
+    code?: string
+
+    locale?: string
+    repeating?: boolean
+    variant?: string
+
+    altPressed? = false
+    controlPressed? = false
+    metaPressed? = false
+    shiftPressed? = false
+
+    static create(e: React.KeyboardEvent): KeyboardEvent {
+        const keyboardEvent: KeyboardEvent = {
+            key: e.key,
+            code: e.code,
+
+            locale: e.locale,
+            repeating: e.repeat,
+            variant: this.mapKeyVariant(e.location),
+
+            altPressed: e.altKey,
+            controlPressed: e.ctrlKey,
+            metaPressed: e.metaKey,
+            shiftPressed: e.shiftKey
+        }
+
+        return keyboardEvent
+    }
+
+    private static mapKeyVariant(variant: number) {
+        switch (variant) {
+            case 1:
+                return KeyVariant.LEFT
+
+            case 2:
+                return KeyVariant.RIGHT
+
+            case 3:
+                return KeyVariant.NUMPAD
+
+            case 4:
+                return KeyVariant.MOBILE
+
+            case 5:
+                return KeyVariant.JOYSTICK
+
+            default:
+                return KeyVariant.STANDARD
+        }
+    }
+}
+
+export abstract class FocusEvent {
+    static create (e: React.FocusEvent): KeyboardEvent {
+        return {
+
+        }
+    }
+}

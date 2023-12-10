@@ -2,6 +2,7 @@ import {Attr} from "./style";
 import {ColorFunction} from "./colorFunction";
 import {Color} from "./types";
 
+
 export type ColorState = {
     backgroundColor?: Color
     textColor?: Attr | number | string | null | ColorFunction

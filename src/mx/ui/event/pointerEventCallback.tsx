@@ -1,37 +1,28 @@
-import PointerEvent from "./pointer_event";
+import {PointerEvent, KeyboardEvent, FocusEvent} from "./pointer_event";
 import React from "react";
 
-export class PointerEventCallback {
-    onClick(e?: PointerEvent) {
-    };
+export type PointerEventCallback = {
+    onClick?(e?: PointerEvent): boolean
 
-    onHover(e?: PointerEvent) {
-    };
+    onHover?(e?: PointerEvent): boolean
 
-    onHoverEnd(e?: PointerEvent) {
-    };
+    onHoverEnd?(e?: PointerEvent): boolean
 
-    onPressed(e?: PointerEvent) {
-    };
+    onPressed?(e?: PointerEvent): boolean
 
-    onReleased(e?: PointerEvent) {
-    };
+    onReleased?(e?: PointerEvent): boolean
 
-    onMoved(e?: PointerEvent) {
+    onMoved?(e?: PointerEvent): boolean
+}
 
-    }
+export type KeyboardEventCallback = {
+    onKeyPressed?(e?: KeyboardEvent): boolean
 
-    static insert(outer: PointerEventCallback, inner: PointerEventCallback) {
-        const callback = new class extends PointerEventCallback {
-            onClick(e?: PointerEvent) {
-                outer.onClick(e)
-                inner.onClick(e);
-            }
+    onKeyReleased?(e?: KeyboardEvent): boolean
+}
 
-            onHover(e?: PointerEvent) {
-                outer.onHover(e)
-                inner.onHover(e);
-            }
-        }()
-    }
+export type FocusEventCallback = {
+    onFocused?(e?: FocusEvent): boolean
+
+    onUnfocused?(e?: FocusEvent): boolean
 }

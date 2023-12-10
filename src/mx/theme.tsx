@@ -1,4 +1,4 @@
-import React, {createContext, useContext} from "react"
+import React, {createContext, useContext, useState} from "react"
 import {createCssShadow} from "./elevation";
 import {Argb} from "./ui/color/Argb";
 import {
@@ -95,7 +95,7 @@ export abstract class Theme {
 }
 
 // theme wrappers for react context
-const ThemeProvider = createContext<Theme | null>(null)//THEME_LIGHT)
+const ThemeProvider = createContext<Theme | null>(null)
 
 export const useTheme = () => useContext(ThemeProvider);
 
@@ -141,132 +141,7 @@ export function styled<C extends Component, P extends Props>(
     return <ThemeWrapper theme={theme}><Component {...props}></Component></ThemeWrapper>
 }
 
-const buttonSheet = (ref: React.RefObject<HTMLElement>, _style: Style) => {
-    const style = _style as AttrMap
-
-    const radius = {
-        "borderRadius": (() => {
-            return Array.isArray(style.cornerSize) ? style.cornerSize.map((v) => `${v}px`).join(" ") : `${style.cornerSize}px`
-        })()
-    }
-
-    const applyCorners = () => {
-        if (style.cornerStyle === "round" || style.cornerStyle === undefined) {
-            return radius
-        } else if (style.cornerStyle === "cut") {
-            return {clipPath: StyleAdapter.createCutCorners(ref, style.cornerSize)}
-        }
-    }
-
-    const shape = {
-        "all": "unset",
-        "width": StyleAdapter.resolveSize(style.width),
-        "height": StyleAdapter.resolveSize(style.height),
-        "transitionDuration": "200ms",
-        "userSelect": "none",
-        clipPath: "border-box",
-        ...applyCorners()
-    }
-
-    // base
-    const base = {
-        component: {
-            ...shape,
-            "position": "relative"
-        },
-        shadowLayer: {
-            ...shape,
-        },
-        container: {
-            ...shape,
-            width: "fit-content",
-
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-        },
-        stateLayer: {
-            ...shape,
-            width: "100%",
-        },
-        label: {
-            ...shape,
-            ...Typescale.Label.Large,
-            userSelect: "none",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            cursor: "default",
-            marginLeft: style.iconPaddingRight,
-            marginRight: style.paddingRight,
-            width: "max-content",
-        }
-    }
-
-    const button = {
-        component: {
-            ...base.component,
-            overflow: "visible",
-            boxShadow: "10 10 10 10 red",
-        },
-        shadowLayer: {
-            ...base.shadowLayer,
-            overflow: "visible",
-
-            ...createCssShadow(style.elevation)
-        },
-
-        container: {
-            ...base.container,
-            position: "relative",
-            overflow: "hidden",
-
-            backgroundColor: style.backgroundColor,
-            color: style.textColor,
-            borderStyle: style.outlineStyle,
-            borderWidth: style.outlineWidth,
-            borderColor: style.outlineColor,
-        },
-        stateLayer: {
-            ...base.stateLayer,
-            position: "absolute",
-            transitionDuration: "200ms",
-            backgroundColor: style.overlayColor,
-        },
-        label: {
-            ...base.label,
-            color: style.textColor,
-            borderRadius: "unset",
-            clipPath: "unset",
-            transform: `scale(${style.scale})`
-        },
-        icon: {
-            ...base.label,
-            color: style.textColor,
-            borderRadius: "unset",
-            clipPath: "unset",
-            width: style.iconSize,
-            height: style.iconSize,
-            maskSize: style.iconSize,
-            maskRepeat: "no-repeat",
-            maskPosition: "center",
-            marginLeft: style.paddingLeft,
-            marginRight: "0px",
-            backgroundColor: style.textColor,
-        }
-    }
-
-    return button
-}
-
 export class StyleAdapter {
-    static wrap(ref: React.RefObject<HTMLElement>, style: Style): object {
-        // @ts-ignore
-        const wrapper = Object.assign({}, buttonSheet(ref, style))
-
-        return wrapper
-    }
-
     static createCutCorners(ref: React.RefObject<HTMLElement>, _radius: number | number[][]) {
         if (ref.current == null) return null
 
@@ -416,7 +291,7 @@ export class StyleAdapter {
     }
 
     //
-    static create(statesheet: Statesheet, stateNames: string[] = ["enabled", "disabled", "pressed", "hovered", "focused"]): { [key: string]: any } {
+    static create(statesheet: Statesheet, stateNames: string[] = ["enabled", "disabled", "pressed", "hovered", "focused"]): [{ [key: string]: any }, string[]] {
         let base = this.spread(statesheet as AttrMap)
 
         let r = {}
@@ -425,8 +300,11 @@ export class StyleAdapter {
 
         // console.log("css created", r)
 
-        return r
+        const composite = Statesheet.createComposite(r)
 
+        const states = Object.keys(composite)
+
+        return [composite, states]
     }
 }
 

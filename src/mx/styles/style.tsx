@@ -7,6 +7,7 @@ import {Color, Number} from "./types";
 import {Hct} from "../ui/color/Hct";
 import {Statesheet} from "./statesheet";
 import {Shapeable, Sizeable} from "../components/Props";
+import React, {RefObject} from "react";
 
 export enum Attr {
     colorPrimary = "colorPrimary",
@@ -199,9 +200,64 @@ export abstract class Attrs {
     }
 }
 
-export type StyleWrapper = {
-    name: string,
-    style: Style
+export type Rect2 = {
+    width: number,
+    height: number,
+
+    cornerRadius: number | number[]
+}
+
+export type Oval = {
+    width: number,
+    height: number,
+}
+
+export type Shape = Rect2 | Oval
+
+export abstract class ShapeDrawable {
+    path?: string
+
+    static create () {
+
+    }
+
+    static typeOf (shape: Shape) {
+
+    }
+
+    static isRect (shape: Shape) {
+        return "width" in shape && "height" in shape
+    }
+
+    static createRect (rect: Rect2) {
+        const radius = rect.cornerRadius
+        const r = Array.isArray(radius) ? radius : [radius, radius, radius, radius]
+
+        const w = rect?.width || 100
+        const h = rect?.height || 50
+
+        const path = `M0,${r[0]} A${r[0]},${r[0]},0,0,1,${r[0]},0 L${w! - r[1]},0 A${r[1]},${r[1]},0,0,1,${w},${r[1]} L${w},${h! - r[2]} A${r[2]},${r[2]},0,0,1,${w! - r[2]},${h!} L${r[3]},${h!} A${r[3]},${r[3]},0,0,1,0,${h! - r[3]} Z`
+
+        return path
+    }
+
+    static createOval (oval: Oval) {
+        const w = oval.width || 100
+        const h = oval.height || 50
+
+        const rx = w! / 2
+        const ry = h! / 2
+
+        const path = `M${0},${ry} a${rx},${ry},0,1,0,${w},${0} a${rx},${ry},0,1,0,${-w},${0} Z`
+
+        return path
+    }
+}
+
+export class CssUtils {
+    static createPath (path: string) {
+        return `path("${path}")`
+    }
 }
 
 class Obj {
@@ -210,5 +266,9 @@ class Obj {
         obj[key] = value
 
         return obj as T
+    }
+
+    static createMap (name: string, body: AttrMap) {
+
     }
 }

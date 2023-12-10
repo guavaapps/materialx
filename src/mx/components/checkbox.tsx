@@ -1,5 +1,5 @@
 import {Attr, AttrMap, Attrs, Style} from "../styles/style";
-import PointerEvent from "../ui/event/pointer_event";
+import {PointerEvent} from "../ui/event/pointer_event";
 import {StyleAdapter, useTheme} from "../theme";
 import {RefObject, useLayoutEffect, useMemo, useRef, useState} from "react";
 import {State} from "../state";
@@ -206,7 +206,7 @@ export function Checkbox(props: CheckboxProps = {
         const styledAttrs = Style.create(style as AttrMap, theme)
 
         // create style statesheet i.e styles for different states
-        const styledStatesheet = StyleAdapter.create(styledAttrs)
+        const [styledStatesheet, states] = StyleAdapter.create(styledAttrs)
 
         // create css stylesheets for each component layer
         const s = Object.values(Layer).map((layer) => {
@@ -316,7 +316,7 @@ export function Checkbox(props: CheckboxProps = {
     }
 
     // handle state changes triggered by ui events
-    const pointerEventCallback = new class extends PointerEventCallback {
+    const pointerEventCallback = {
         onClick(e?: PointerEvent) {
             onClick?.(e)
 
@@ -325,42 +325,43 @@ export function Checkbox(props: CheckboxProps = {
                 setSelected(it => !it)
                 setCheckboxState(it => it === CheckboxState.CHECKED ? CheckboxState.UNCHECKED : CheckboxState.CHECKED)
             }
-        }
+        },
 
         onHover(e?: PointerEvent) {
             if (isEnabled) setState(State.STATE_HOVERED)
 
             onHover?.(e)
-        }
+        },
 
         onHoverEnd(e?: PointerEvent) {
             if (isEnabled) setState(State.STATE_ENABLED)
 
             onHoverEnd?.(e)
-        }
+        },
 
         onPressed(e?: PointerEvent) {
             if (isEnabled) setState(State.STATE_PRESSED)
 
             onPressed?.(e)
-        }
+        },
 
         onReleased(e?: PointerEvent) {
             if (isEnabled) setState(State.STATE_HOVERED)
 
             onReleased?.(e)
-        }
+        },
 
         onMoved(e?: PointerEvent) {
 
         }
-    }()
+    }
 
     useLayoutEffect(() => {
         // trigger redraw after layout
         setRef(ref.current)
     }, [])
 
+    // @ts-ignore
     return (
         <button
             tabIndex={0}
@@ -376,6 +377,7 @@ export function Checkbox(props: CheckboxProps = {
             // @ts-ignore
             ref={ref}
 
+            // @ts-ignore
             {...ReactUiEventAdapter.wrap(ref, pointerEventCallback)}>
 
             {/*<span style={{*/}

@@ -1,5 +1,5 @@
 import {Attr, AttrMap, Attrs, Style} from "../styles/style";
-import PointerEvent from "../ui/event/pointer_event";
+import {PointerEvent} from "../ui/event/pointer_event";
 import {StyleAdapter, useTheme} from "../theme";
 import {RefObject, useLayoutEffect, useMemo, useRef, useState} from "react";
 import {State} from "../state";
@@ -259,7 +259,7 @@ export function Chip(props: ChipProps = {
         console.log("styled", styledAttrs)
 
         // create style statesheet i.e styles for different states
-        const styledStatesheet = StyleAdapter.create(styledAttrs)
+        const [styledStatesheet, states] = StyleAdapter.create(styledAttrs)
 
         console.log("statesheet", styledStatesheet)
 
@@ -376,7 +376,7 @@ export function Chip(props: ChipProps = {
     }
 
     // handle state changes triggered by ui events
-    const pointerEventCallback = new class extends PointerEventCallback {
+    const pointerEventCallback = {
         onClick(e?: PointerEvent) {
             onClick?.(e)
 
@@ -384,36 +384,36 @@ export function Chip(props: ChipProps = {
                 //setState(state === State.STATE_SELECTED ? State.STATE_ENABLED : State.STATE_SELECTED)
                 setSelected(it => !it)
             }
-        }
+        },
 
         onHover(e?: PointerEvent) {
             if (isEnabled) setState(State.STATE_HOVERED)
 
             onHover?.(e)
-        }
+        },
 
         onHoverEnd(e?: PointerEvent) {
             if (isEnabled) setState(State.STATE_ENABLED)
 
             onHoverEnd?.(e)
-        }
+        },
 
         onPressed(e?: PointerEvent) {
             if (isEnabled) setState(State.STATE_PRESSED)
 
             onPressed?.(e)
-        }
+        },
 
         onReleased(e?: PointerEvent) {
             if (isEnabled) setState(State.STATE_HOVERED)
 
             onReleased?.(e)
-        }
+        },
 
         onMoved(e?: PointerEvent) {
 
         }
-    }()
+    }
 
     useLayoutEffect(() => {
         // trigger redraw after layout
@@ -434,6 +434,7 @@ export function Chip(props: ChipProps = {
 
             ref={ref}
 
+            // @ts-ignore
             {...ReactUiEventAdapter.wrap(ref, pointerEventCallback)}>
 
             <span style={stateRefFor(Layer.SHADOW_LAYER)}>
