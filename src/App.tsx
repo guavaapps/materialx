@@ -11,7 +11,7 @@ import {useApp} from "./mx/app/app";
 import {App as MaterialApp} from "./mx/app/app"
 import {Simulate} from "react-dom/test-utils";
 import progress = Simulate.progress;
-import {ConstraintLayout, LayoutTestComponent} from "./mx/layout/constraint_layout";
+import {ConstraintLayout, LayoutTestComponent} from "./mx/layout/constraintLayout/constraint_layout";
 
 function TransitionTestComponent() {
     const transition: Transition = {
@@ -109,21 +109,22 @@ function App() {
     const strt = "M0,0 H100 V50 H0 V0 Z"
     const endd = "M0,0 H50 V25 H0 V0 Z"
 
-    const constraintLayout = (
-        <ConstraintLayout>
-            <LayoutTestComponent id="text1" text="text1" layoutParams={{
-                leftToLeftOf: "parent",
-                rightToLeftOf: "text2"
-            }}></LayoutTestComponent>
+    // const constraintLayout = (
+    //     <ConstraintLayout>
+    //         <LayoutTestComponent id="text1" text="text1" layoutParams={{
+    //             leftToLeftOf: "parent",
+    //             rightToLeftOf: "text2"
+    //         }}></LayoutTestComponent>
+    //
+    //         <LayoutTestComponent id="text2" text="text2" layoutParams={{
+    //             rightToRightOf: "parent",
+    //             leftToRightOf: "text1"
+    //         }}></LayoutTestComponent>
+    //     </ConstraintLayout>
+    // )
 
-            <LayoutTestComponent id="text2" text="text2" layoutParams={{
-                rightToRightOf: "parent",
-                leftToRightOf: "text1"
-            }}></LayoutTestComponent>
-        </ConstraintLayout>
-    )
-
-    return (constraintLayout)
+    // return (constraintLayout)
+    return (<div>hello</div>)
 }
 
 export default App;

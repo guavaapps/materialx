@@ -1,6 +1,5 @@
 import {FocusEvent, KeyboardEvent, PointerEvent} from "../ui/event/pointer_event";
 import {Attr, Attrs} from "../styles/style";
-import {Number} from "../styles/types";
 import {Statesheet} from "../styles/statesheet";
 import React from "react";
 import {LayoutParams} from "../layout/layout";
@@ -56,3 +55,5 @@ export type Focusable = {
 export type Styleable = {
 
 }
+
+export type Number = number | string
