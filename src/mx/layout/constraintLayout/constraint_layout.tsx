@@ -1,89 +1,14 @@
 import {Id, Layout, LayoutParams, useOnLayoutHandler} from "../layout";
 import {ReactElement, RefObject, useState} from "react";
-import {ComponentProps} from "../../components/Props";
+import {Component} from "../../components/Props";
 import {AttrMap} from "../../styles/style";
 import {Rect} from "../../shapes/shapes";
+import {ConstraintSystem} from "./system/ConstraintSystem";
+import {Ids} from "../../resources/id/Id";
+const MATCH_PARENT = Layout.LayoutParams.MATCH_PARENT
+const WRAP_CONTENT = Layout.LayoutParams.WRAP_CONTENT
 
-export type ConstrainLayoutParams = {
-    leftToLeftOf: string,
-    leftToRightOf: string,
-    rightToLeftOf: string,
-    rightToRightOf: string,
-    topToTopOf: string,
-    topToBottomOf: string,
-    bottomToTopOf: string,
-    bottomToBottomOf: string
-} & LayoutParams
-
-function isLeftConstraint(constraint: string) {
-    return constraint.startsWith("left")
-}
-
-function isRightConstraint(constraint: string) {
-    return constraint.startsWith("right")
-}
-
-function isTopConstraint(constraint: string) {
-    return constraint.startsWith("top")
-}
-
-function isBottomConstraint(constraint: string) {
-    return constraint.startsWith("bottom")
-}
-
-function getConstraintLayoutParams(params: LayoutParams) {
-    const constraintAttributes = [
-        "leftToLeftOf",
-        "leftToRightOf",
-        "rightToLeftOf",
-        "rightToRightOf",
-        "topToTopOf",
-        "topToBottomOf",
-        "bottomToTopOf",
-        "bottomToBottomOf",
-    ]
-    const attributes = Object.keys(params)
-
-    const constraints = attributes.filter((it) => constraintAttributes.includes(it))
-
-    let isConstrainedLeft = false
-    let isConstrainedRight = false
-    let isConstrainedTop = false
-    let isConstrainedBottom = false
-
-    const validConstraints = constraints.filter((it) => {
-        const isLeftValid = isLeftConstraint(it) && !isConstrainedLeft
-        const isRightValid = isRightConstraint(it) && !isConstrainedRight
-        const isTopValid = isTopConstraint(it) && !isConstrainedTop
-        const isBottomValid = isBottomConstraint(it) && !isConstrainedBottom
-
-        if (isLeftValid) {
-            isConstrainedLeft = true
-        }
-        if (isRightValid) {
-            isConstrainedRight = true
-        }
-        if (isTopValid) {
-            isConstrainedTop = true
-        }
-        if (isBottomValid) {
-            isConstrainedBottom = true
-        }
-
-        return isLeftValid || isRightValid || isTopValid || isBottomValid
-    })
-
-    const validParams = validConstraints.map((it) => {
-        const pair: AttrMap = {}
-        pair[it] = params[it as keyof typeof params]
-
-        return pair
-    })
-
-    return Object.assign({}, ...validParams) as ConstrainLayoutParams
-}
-
-export type ConstraintLayoutProps = {} & ComponentProps
+export type ConstraintLayoutProps = {} & Component
 
 /**
  TODO
@@ -99,50 +24,142 @@ export function ConstraintLayout(props: ConstraintLayoutProps) {
 
         console.log("elements", elements)
 
+        const childrenLayoutParams = new Map<string, ConstraintLayout.LayoutParams>()
+
         elements.forEach((it, i) => {
             const id = it.props.id
-            const layoutParams = it.props.layoutParams
+            const layoutParams = it.props.layoutParams as ConstraintLayout.LayoutParams
 
             const objectBounds = ref?.current?.children?.item(i)?.getBoundingClientRect()
             const bounds: Rect = {
                 width: objectBounds?.width || 0,
                 height: objectBounds?.height || 0
             }
+
+            // from layout
+            let mWidth = bounds.width
+            let mHeight = bounds.height
+
+            // width
+            if (layoutParams.width === MATCH_PARENT) {
+                mWidth = bounds.width
+            }
+            else if (layoutParams.width === WRAP_CONTENT) {
+                // TODO lock measurer
+                // if a child is set to WRAP_CONTENT it needs to be measured
+                // first before this layout can be
+            }
+            else {
+                if (mWidth < layoutParams.minWidth) {
+                    mWidth = layoutParams.minWidth
+                } else if (mWidth > layoutParams.maxWidth) {
+                    mWidth = layoutParams.maxWidth
+                }
+
+                if (mHeight < layoutParams.minHeight) {
+                    mHeight = layoutParams.minHeight
+                } else if (mHeight > layoutParams.maxHeight) {
+                    mHeight = layoutParams.maxHeight
+                }
+            }
+
+            // height
+            if (layoutParams.height === MATCH_PARENT) {
+                mHeight = bounds.height
+            }
+            else if (layoutParams.height === WRAP_CONTENT) {
+
+            }
+            else {
+                if (mHeight < layoutParams.minHeight) {
+                    mHeight = layoutParams.minHeight
+                } else if (mHeight > layoutParams.maxHeight) {
+                    mHeight = layoutParams.maxHeight
+                }
+            }
+
+            // update layout params
+            layoutParams.measuredWidth = mWidth
+            layoutParams.measuredHeight = mHeight
+
+            childrenLayoutParams.set(id, layoutParams)
         })
     })
 
     return (<div ref={ref as RefObject<HTMLDivElement>}>
         {props.children}
     </div>)
+
+
 }
 
 export namespace ConstraintLayout {
-    export class LayoutParams extends Layout.LayoutParams{
-        static readonly PARENT = -2
-        leftToLeft: number = LayoutParams.UNSET
-        leftToRight: number = LayoutParams.UNSET
+    export class LayoutParams extends Layout.LayoutParams {
+        static readonly PARENT = -4
+        leftToLeft: number | string = LayoutParams.UNSET
+        leftToRight: number | string = LayoutParams.UNSET
 
-        rightToLeft: number = LayoutParams.UNSET
-        rightToRight: number = LayoutParams.UNSET
+        rightToLeft: number | string = LayoutParams.UNSET
+        rightToRight: number | string = LayoutParams.UNSET
 
-        topToTop: number = LayoutParams.UNSET
-        topToBottom = LayoutParams.UNSET
+        topToTop: number | string = LayoutParams.UNSET
+        topToBottom: number | string = LayoutParams.UNSET
 
-        bottomToTop = LayoutParams.UNSET
-        bottomToBottom = LayoutParams.UNSET
+        bottomToTop: number | string = LayoutParams.UNSET
+        bottomToBottom: number | string = LayoutParams.UNSET
         baseline: number = LayoutParams.UNSET
 
-        constructor(source: Layout.LayoutParams) {
+        constructor(source?: Layout.LayoutParams) {
             super(source)
 
             // TODO
         }
     }
+
+    // export class Measurer {
+    //     private view: Component
+    {/*    private children: Component[]*/}
+
+    //     private system: ConstraintSystem
+    //
+    //     constructor(view: Component) {
+    //         this.view = view
+    //
+    //         this.children = Layout.getChildren(view)
+    //
+    //         const idManager = new Ids()
+    //
+    //         const childrenLayoutParams = new Map<number, LayoutParams>()
+    //         for (let child of this.children) {
+    //             if (child.id) {
+    //                 idManager.add(child.id)
+    //             }
+    //         }
+    //
+    //         const ids = idManager.generate()
+    //
+    //         for (let i = 0; i < this.children.length; i++) {
+    //             const child = this.children[i]
+    //
+    //             if (child.id) {
+    //                 childrenLayoutParams.set(ids[i], child.layoutParams! as ConstraintLayout.LayoutParams)
+    //             }
+    //         }
+    //
+    //         this.system = new ConstraintSystem(LayoutParams.PARENT, view.layoutParams! as ConstraintLayout.LayoutParams, childrenLayoutParams)
+    //     }
+    //
+    //     measure() {
+    //         const system = this.system
+    //
+    //         system.measure()
+    //     }
+    // }
 }
 
 export type TestProps = {
     text: string
-} & ComponentProps
+} & Component
 
 export function LayoutTestComponent(props: TestProps) {
     return (<p>{props.text}</p>)

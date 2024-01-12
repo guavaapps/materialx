@@ -1,8 +1,7 @@
-import {createContext, useLayoutEffect, useRef, useState} from "react";
+import {createContext, ReactElement, useLayoutEffect, useRef, useState} from "react";
 import {Rect} from "../shapes/shapes";
-import {Component} from "../theme";
 import ReactDOM from "react-dom/client";
-import {Number} from "../components/Props";
+import {Component, Number} from "../components/Props";
 import {AttrMap} from "../styles/style";
 
 export enum Size {
@@ -31,6 +30,16 @@ export function useOnLayoutHandler(callback: (bounds: Rect) => any) {
     return ref
 }
 
+export class Layout {
+    static getChildren (view: Component) {
+        let children = view.children as ReactElement[]
+        children = Array.isArray(children) ? children : [children]
+        let c = children.map(it => it.props as Component)
+
+        return c
+    }
+}
+
 export namespace Layout {
     export class LayoutParams {
         static readonly MATCH_PARENT = -1
@@ -39,8 +48,8 @@ export namespace Layout {
 
         isRtl: boolean = false
 
-        x: Number = 0
-        y: Number = 0
+        x: number = 0
+        y?: number = 0
 
         minWidth: number = 0
         minHeight: number = 0
@@ -52,14 +61,14 @@ export namespace Layout {
         measuredWidth: number = 0
         measuredHeight: number = 0
 
-        margin: Number = 0
-        marginLeft: Number = 0
-        marginTop: Number = 0
-        marginBottom: Number = 0
-        marginRight: Number = 0
+        margin: number = 0
+        marginLeft: number = 0
+        marginTop: number = 0
+        marginBottom: number = 0
+        marginRight: number = 0
 
-        paddingTop: Number = 0
-        paddingBottom: Number = 0
+        paddingTop: number = 0
+        paddingBottom: number = 0
         paddingRight: number = 0
         paddingLeft: number= 0
         paddingStart: number= 0

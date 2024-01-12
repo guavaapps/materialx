@@ -22,7 +22,7 @@ export interface Shapeable {
 
 export type Size = number | "MATCH_PARENT" | "WRAP_CONTENT" | "MATCH_CONSTRAINT"
 
-export type ComponentProps = {
+export type Component = {
     id?: string,
     children?: React.ReactNode
 

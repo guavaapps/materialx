@@ -1,17 +1,17 @@
-import React, {useRef, useState} from 'react';
+import React, {useMemo, useRef, useState} from 'react';
 import './App.scss';
 import {Statesheet} from "./mx/styles/statesheet";
-import {Component, StyleAdapter, Theme, THEME_LIGHT} from "./mx/theme";
+import {StyleAdapter, Theme, THEME_LIGHT} from "./mx/theme";
 import {CssUtils, Rect2, Shape, ShapeDrawable} from "./mx/styles/style";
-import {Layout, StatesheetHandler, TextView, useJoe} from "./mx/components/text_view";
+import {StatesheetHandler, TextView, useJoe} from "./mx/components/text_view";
 import {Styles} from "./mx/components/button/styles";
 import {Animation, Transition, TransitionHandler} from "./mx/transitions/transition";
 import {useTransitionService} from "./mx/app/services";
-import {useApp} from "./mx/app/app";
-import {App as MaterialApp} from "./mx/app/app"
-import {Simulate} from "react-dom/test-utils";
-import progress = Simulate.progress;
-import {ConstraintLayout, LayoutTestComponent} from "./mx/layout/constraintLayout/constraint_layout";
+import {Ids} from "./mx/resources/id/Id";
+import {ConstraintLayout} from "./mx/layout/constraintLayout/constraint_layout";
+import {ConstraintSystem} from "./mx/layout/constraintLayout/system/ConstraintSystem";
+import {Component} from "./mx/components/Props";
+import {Arrays} from "./mx/layout/constraintLayout/system/utils";
 
 function TransitionTestComponent() {
     const transition: Transition = {
@@ -99,6 +99,56 @@ function App() {
         }
     }
 
+    //
+
+    const memo = useMemo(() => {
+        const parentLayoutParams = new ConstraintLayout.LayoutParams ()
+        parentLayoutParams.width = 500
+        parentLayoutParams.height = 500
+
+        const childLayoutParams1 = new ConstraintLayout.LayoutParams()
+        childLayoutParams1.width = 100
+        childLayoutParams1.height = 50
+
+        childLayoutParams1.leftToLeft = ConstraintLayout.LayoutParams.PARENT
+        childLayoutParams1.topToTop = ConstraintLayout.LayoutParams.PARENT
+        childLayoutParams1.bottomToBottom = ConstraintLayout.LayoutParams.PARENT
+        childLayoutParams1.rightToLeft = "view2"
+
+        const childLayoutParams2 = new ConstraintLayout.LayoutParams()
+        childLayoutParams2.width = 100
+        childLayoutParams2.height = 50
+
+        childLayoutParams2.leftToRight = "view1"
+        childLayoutParams2.topToTop = ConstraintLayout.LayoutParams.PARENT
+        childLayoutParams2.bottomToBottom = ConstraintLayout.LayoutParams.PARENT
+        childLayoutParams2.rightToRight = ConstraintLayout.LayoutParams.PARENT
+
+        const parentView: Component = {
+            id: "main_layout",
+            layoutParams: parentLayoutParams
+        }
+
+        const childView1: Component = {
+            id: "view1",
+            layoutParams: childLayoutParams1
+        }
+
+        const childView2: Component = {
+            id: "view2",
+            layoutParams: childLayoutParams2
+        }
+
+        const system = new ConstraintSystem(parentView, [childView1, childView2])
+        system.measure()
+
+        return "memo"
+    }, [])
+
+    console.log("memo", memo)
+
+    //
+
     const comp = Statesheet.createComposite(ss)
     const startState = "enabled$selected"
     const endState = "disabled"
@@ -124,7 +174,15 @@ function App() {
     // )
 
     // return (constraintLayout)
-    return (<div>hello</div>)
+
+    return (<div>
+        <p>
+            hello1
+        </p>
+        <p>
+            hello2
+        </p>
+    </div>)
 }
 
 export default App;

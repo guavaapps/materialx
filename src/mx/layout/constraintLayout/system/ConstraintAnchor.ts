@@ -1,10 +1,9 @@
 import {SolverVariable, SolverVariableType} from "./SolverVariable";
-import {AssertionError} from "assert";
 import {ConstraintWidget} from "./ConstraintWidget";
 import {Cache} from "./Cache";
 import {Grouping} from "./Grouping";
 import {WidgetGroup} from "./WidgetGroup";
-import {Guideline} from "./Guideline";
+import {Guideline} from "./ConstraintWidget";
 
 export enum ConstraintAnchorType {
     NONE, LEFT, TOP, RIGHT, BOTTOM, BASELINE, CENTER, CENTER_X, CENTER_Y
@@ -72,7 +71,7 @@ export class ConstraintAnchor {
         return this.mHasFinalValue;
     }
 
-    private static readonly UNSET_GONE_MARGIN = Number.MIN_VALUE
+    private static readonly UNSET_GONE_MARGIN = 0//Number.MIN_VALUE TODO change back
 
     mOwner: ConstraintWidget
     mType: ConstraintAnchorType
@@ -146,6 +145,8 @@ export class ConstraintAnchor {
     }
 
     public reset() {
+        console.log("[reset] &anchor")
+
         if (this.mTarget != null && this.mTarget.mDependents != null) {
             this.mTarget.mDependents.delete(this);
             if (this.mTarget.mDependents.size == 0) {
@@ -158,9 +159,18 @@ export class ConstraintAnchor {
         let mGoneMargin = ConstraintAnchor.UNSET_GONE_MARGIN;
         let mHasFinalValue = false;
         let mFinalValue = 0;
+
+        this.mDependents = null;
+        this.mTarget = null;
+        this.mMargin = 0;
+        this.mGoneMargin = ConstraintAnchor.UNSET_GONE_MARGIN;
+        this.mHasFinalValue = false;
+        this.mFinalValue = 0;
     }
 
     connectFull(toAnchor: ConstraintAnchor, margin: number, goneMargin: number, forceConnection: boolean) {
+        console.log("[anchor] full connect")
+
         if (toAnchor == null) {
             this.reset();
             return true;
@@ -237,7 +247,7 @@ export class ConstraintAnchor {
                 return false;
         }
 
-        throw new AssertionError(this.mType);
+        throw new Error(this.mType);
     }
 
     public isSideAnchor() {
@@ -254,7 +264,7 @@ export class ConstraintAnchor {
             case ConstraintAnchorType.NONE:
                 return false;
         }
-        throw new AssertionError(this.mType);
+        throw new Error(this.mType);
     }
 
     public isSimilarDimensionConnection(anchor: ConstraintAnchor) {
@@ -281,7 +291,7 @@ export class ConstraintAnchor {
             case ConstraintAnchorType.NONE:
                 return false;
         }
-        throw new AssertionError(this.mType);
+        throw new Error(this.mType);
     }
 
     setMargin(margin: number) {
@@ -310,7 +320,7 @@ export class ConstraintAnchor {
             case ConstraintAnchorType.NONE:
                 return true;
         }
-        throw new AssertionError(this.mType);
+        throw new Error(this.mType);
     }
 
     public toString() {
@@ -383,6 +393,6 @@ export class ConstraintAnchor {
             case ConstraintAnchorType.NONE:
                 return null;
         }
-        throw new AssertionError(this.mType);
+        throw new Error(this.mType);
     }
 }

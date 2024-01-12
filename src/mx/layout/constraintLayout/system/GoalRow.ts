@@ -1,5 +1,5 @@
 import {Cache} from "./Cache";
-import {ArrayRow} from "./ArrayRow";
+import {ArrayRow} from "./SolverVariable";
 import {SolverVariable} from "./SolverVariable";
 
 export class GoalRow extends ArrayRow{

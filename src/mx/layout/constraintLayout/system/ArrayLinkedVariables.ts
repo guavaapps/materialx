@@ -1,7 +1,6 @@
-import {ArrayRow} from "./ArrayRow";
+import {ArrayRow} from "./SolverVariable";
 import {Cache} from "./Cache";
 import {SolverVariable} from "./SolverVariable";
-import ArrayRowVariables = ArrayRow.ArrayRowVariables;
 import {Arrays} from "./utils";
 
 export class ArrayLinkedVariables implements ArrayRow.ArrayRowVariables {
@@ -15,11 +14,11 @@ export class ArrayLinkedVariables implements ArrayRow.ArrayRowVariables {
     private mRowSize = 8
     private mCandidate: SolverVariable | null = null
 
-    private mArrayIndices = new Array<number>(this.mRowSize)
+    private mArrayIndices = Arrays.ofNumbers(this.mRowSize)//new Array<number>(this.mRowSize)
 
-    private mArrayNextIndices = new Array<number>(this.mRowSize)
+    private mArrayNextIndices = Arrays.ofNumbers(this.mRowSize)//new Array<number>(this.mRowSize)
 
-    private mArrayValues = new Array<number>(this.mRowSize)
+    private mArrayValues = Arrays.ofNumbers(this.mRowSize)//new Array<number>(this.mRowSize)
 
     private mHead = ArrayLinkedVariables.NONE
 
@@ -105,9 +104,9 @@ export class ArrayLinkedVariables implements ArrayRow.ArrayRowVariables {
             this.mRowSize *= 2;
             this.mDidFillOnce = false;
             this.mLast = availableIndice - 1;
-            this.mArrayValues = Arrays.copy(this.mArrayValues, this.mRowSize)//Arrays.copyOf(mArrayValues, mRowSize);
-            this.mArrayIndices = Arrays.copy(this.mArrayIndices, this.mRowSize)//Arrays.copyOf(mArrayIndices, mRowSize);
-            this.mArrayNextIndices = Arrays.copy(this.mArrayNextIndices, this.mRowSize) //Arrays.copyOf(mArrayNextIndices, mRowSize);
+            this.mArrayValues = Arrays.copyNumbers(this.mArrayValues, this.mRowSize)//Arrays.copyOf(mArrayValues, mRowSize);
+            this.mArrayIndices = Arrays.copyNumbers(this.mArrayIndices, this.mRowSize)//Arrays.copyOf(mArrayIndices, mRowSize);
+            this.mArrayNextIndices = Arrays.copyNumbers(this.mArrayNextIndices, this.mRowSize) //Arrays.copyOf(mArrayNextIndices, mRowSize);
         }
 
         // Finally, let's insert the element
@@ -225,9 +224,9 @@ export class ArrayLinkedVariables implements ArrayRow.ArrayRowVariables {
             this.mRowSize *= 2;
             this.mDidFillOnce = false;
             this.mLast = availableIndice - 1;
-            this.mArrayValues = Arrays.copy(this.mArrayValues, this.mRowSize)//Arrays.copyOf(mArrayValues, mRowSize);
-            this.mArrayIndices = Arrays.copy(this.mArrayIndices, this.mRowSize)//Arrays.copyOf(mArrayIndices, mRowSize);
-            this.mArrayNextIndices = Arrays.copy(this.mArrayNextIndices, this.mRowSize)//Arrays.copyOf(mArrayNextIndices, mRowSize);
+            this.mArrayValues = Arrays.copyNumbers(this.mArrayValues, this.mRowSize)//Arrays.copyOf(mArrayValues, mRowSize);
+            this.mArrayIndices = Arrays.copyNumbers(this.mArrayIndices, this.mRowSize)//Arrays.copyOf(mArrayIndices, mRowSize);
+            this.mArrayNextIndices = Arrays.copyNumbers(this.mArrayNextIndices, this.mRowSize)//Arrays.copyOf(mArrayNextIndices, mRowSize);
         }
 
         // Finally, let's insert the element
@@ -381,15 +380,29 @@ export class ArrayLinkedVariables implements ArrayRow.ArrayRowVariables {
     }
 
     getVariable(index: number): SolverVariable | null {
+        console.log("[APC] [GET_VAR-L] check", index, this.mHead)
+
         let current = this.mHead;
         let counter = 0;
-        while (current != ArrayLinkedVariables.NONE && counter < this.mCurrentSize) {
-            if (counter == index) {
-                return this.mCache.mIndexedVariables[(this.mArrayIndices)[current]];
+
+        while (current !== ArrayLinkedVariables.NONE && counter < this.mCurrentSize) {
+            if (counter === index) {
+                console.log("[APC] [GET_VAR-L] counter is index")
+
+                let r = this.mCache.mIndexedVariables[(this.mArrayIndices)[current]] || null
+
+                console.log("[APC] [GET_VAR_L] var", r, this.mArrayIndices[current], this.mCache.mIndexedVariables[this.mArrayIndices[current]])
+                console.log("[APC] [GET_VAR_L] test", this.mCache.mIndexedVariables)
+
+                return r
             }
+            console.log("[APC] [GET_VAR-L] next", this.mArrayNextIndices)
+
             current = (this.mArrayNextIndices)[current];
             counter++;
         }
+        console.log("[APC] [GET_VAR-L] not found")
+
         return null;
     }
 

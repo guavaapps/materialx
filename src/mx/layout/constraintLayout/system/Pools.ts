@@ -1,5 +1,3 @@
-import {constants} from "zlib";
-
 export class Pools {
     private static readonly DEBUG = false
 
@@ -17,7 +15,7 @@ export namespace Pools {
     }
 
     export class SimplePool<T> implements Pool <T> {
-        private mPool: (object | null)[] = []
+        private mPool: (T | null)[] = []
 
         private mPoolSize: number = 0
 
@@ -26,7 +24,7 @@ export namespace Pools {
                 throw new Error ("max pool size must be > 0")
             }
 
-            this.mPool = new Array<object> (maxPoolSize)
+            this.mPool = new Array<T | null> (maxPoolSize).fill(null)
         }
 
         acquire(): T | null {
@@ -44,7 +42,7 @@ export namespace Pools {
 
         release(instance: T): boolean {
             if (this.mPoolSize < this.mPool.length) {
-                this.mPool[this.mPoolSize] = instance as object
+                this.mPool[this.mPoolSize] = instance as T
                 this.mPoolSize ++
 
                 return true
@@ -60,7 +58,7 @@ export namespace Pools {
             for (let i = 0; i < count; i++) {
                 let instance: T = variables[i]
                 if (this.mPoolSize < this.mPool.length) {
-                    this.mPool[this.mPoolSize] = instance as object
+                    this.mPool[this.mPoolSize] = instance as T
                     this.mPoolSize ++;
                 }
             }

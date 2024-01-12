@@ -1,7 +1,7 @@
-import {ComponentProps} from "../components/Props";
+import {Component} from "../components/Props";
 
-export type CoordinatorLayoutProps = ComponentProps
+export type CoordinatorLayoutProps = Component
 
-export function CoordinatorLayout (props: ComponentProps) {
+export function CoordinatorLayout (props: Component) {
 
 }

@@ -1,11 +1,11 @@
-import {WidgetRun} from "./WidgetRun";
-import {DependencyNode} from "./DependencyNode";
-import {ConstraintWidgetContainer} from "./ConstraintWidgetContainer";
+import {WidgetRun} from "./ConstraintWidget";
+import {DependencyNode} from "./ConstraintWidget";
+import {ConstraintWidgetContainer} from "./ConstraintWidget";
 import {ConstraintWidget} from "./ConstraintWidget";
-import {HelperReferences} from "./HelperReferences";
-import {ChainRun} from "./ChainRun";
-import {HorizontalWidgetRun} from "./HorizontalWidgetRun";
-import {VerticalWidgetRun} from "./VerticalWidgetRun";
+import {HelperReferences} from "./ConstraintWidget";
+import {ChainRun} from "./ConstraintWidget";
+import {HorizontalWidgetRun} from "./ConstraintWidget";
+import {VerticalWidgetRun} from "./ConstraintWidget";
 
 export class RunGroup {
     public static readonly START = 0;

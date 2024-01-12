@@ -1,5 +1,5 @@
-import {ConstraintWidgetContainer} from "./ConstraintWidgetContainer";
-import {LinearSystem} from "./LinearSystem";
+import {ConstraintWidgetContainer} from "./ConstraintWidget";
+import {LinearSystem} from "./SolverVariable";
 import {ConstraintWidget, DimensionBehaviour} from "./ConstraintWidget";
 
 export class Optimizer {

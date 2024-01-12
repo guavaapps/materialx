@@ -1,7 +1,7 @@
 import {ConstraintWidget, DimensionBehaviour} from "./ConstraintWidget";
-import {LinearSystem} from "./LinearSystem";
+import {LinearSystem} from "./SolverVariable";
 import {Arrays} from "./utils";
-import {ConstraintWidgetContainer} from "./ConstraintWidgetContainer";
+import {ConstraintWidgetContainer} from "./ConstraintWidget";
 import {Chain} from "./Chain";
 
 export class MeasureResult {

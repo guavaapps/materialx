@@ -1,5 +1,4 @@
-import {ConstraintWidget} from "./ConstraintWidget";
-import {ConstraintWidgetContainer} from "./ConstraintWidgetContainer";
+import {ConstraintWidgetContainer} from "./ConstraintWidget";
 
 export interface Helper {
     updateConstraints (container: ConstraintWidgetContainer): void

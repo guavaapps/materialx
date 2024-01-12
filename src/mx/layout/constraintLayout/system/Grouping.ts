@@ -1,12 +1,11 @@
 import {ConstraintWidget, DimensionBehaviour} from "./ConstraintWidget";
-import {ConstraintWidgetContainer} from "./ConstraintWidgetContainer";
-import {BasicMeasure, Measure, Measurer} from "./BasicMeasure";
-import {Guideline} from "./Guideline";
-import {HelperWidget} from "./HelperWidget";
-import {Barrier} from "./Barrier";
+import {ConstraintWidgetContainer} from "./ConstraintWidget";
+import {Measure, Measurer} from "./ConstraintWidget";
+import {Guideline} from "./ConstraintWidget";
+import {HelperWidget} from "./ConstraintWidget";
+import {Barrier} from "./ConstraintWidget";
 import {WidgetGroup} from "./WidgetGroup";
-import {ConstraintAnchor, ConstraintAnchorType} from "./ConstraintAnchor";
-import {Helper} from "./Helper";
+import {ConstraintAnchorType} from "./ConstraintAnchor";
 import {Arrays} from "./utils";
 
 export class Grouping {
@@ -130,7 +129,7 @@ export class Grouping {
             if (horizontalBarriers != null) {
                 for (let barrier of horizontalBarriers) {
                     let group = this.findDependents(barrier, ConstraintWidget.HORIZONTAL, dependencyLists, null);
-                    barrier.addDependents(dependencyLists, ConstraintWidget.HORIZONTAL, group);
+                    barrier.addDependents(dependencyLists, ConstraintWidget.HORIZONTAL, group!);
                     group!.cleanup(dependencyLists);
                 }
             }
@@ -176,7 +175,7 @@ export class Grouping {
             if (verticalBarriers != null) {
                 for (let barrier of verticalBarriers) {
                     let group = this.findDependents(barrier, ConstraintWidget.VERTICAL, dependencyLists, null);
-                    barrier.addDependents(dependencyLists, ConstraintWidget.VERTICAL, group);
+                    barrier.addDependents(dependencyLists, ConstraintWidget.VERTICAL, group!);
                     group!.cleanup(dependencyLists);
                 }
             }

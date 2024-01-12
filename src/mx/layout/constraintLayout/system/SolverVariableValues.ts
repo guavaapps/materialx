@@ -1,7 +1,6 @@
 import {Cache} from "./Cache";
-import {ArrayRow} from "./ArrayRow";
+import {ArrayRow} from "./SolverVariable";
 import {SolverVariable} from "./SolverVariable";
-import {LinearSystem} from "./LinearSystem";
 import {Arrays} from "./utils";
 
 export class SolverVariableValues implements ArrayRow.ArrayRowVariables {
@@ -35,18 +34,28 @@ export class SolverVariableValues implements ArrayRow.ArrayRowVariables {
     }
 
     getVariable(index: number): SolverVariable | null {
+        console.log("[APC] [GET_VAR] check")
+
         const count = this.mCount;
-        if (count == 0) {
+        if (count === 0) {
+            console.log("[APC] [GET_VAR] is 0")
+
             return null;
         }
 
         let j = this.mHead;
         for (let i = 0; i < count; i++) {
-            if (i == index && j != this.mNone) {
-                return this.mCache.mIndexedVariables[(this.mVariables)[j]!];
+            if (i === index && j !== this.mNone) {
+                console.log("[APC] [GET_VAR] found non-none index")
+
+                let r = this.mCache.mIndexedVariables[(this.mVariables)[j]!];
+
+                console.log("[APC] [GET_VAR] var", r)
+
+                return r
             }
             j = (this.mNext)[j]!
-            if (j == this.mNone) {
+            if (j === this.mNone) {
                 break;
             }
         }

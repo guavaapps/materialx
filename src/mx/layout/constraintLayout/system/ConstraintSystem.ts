@@ -1,14 +1,11 @@
 import {ConstraintWidget, DimensionBehaviour} from "./ConstraintWidget";
-import {ConstraintWidgetContainer} from "./ConstraintWidgetContainer"
+import {ConstraintWidgetContainer} from "./ConstraintWidget"
 import {Optimizer} from "./Optimizer"
-import {BasicMeasure, Measure} from "./BasicMeasure"
-import {Measurer as BasicMeasurer} from "./BasicMeasure"
-import {lazy, ReactElement} from "react";
-import {Guideline} from "./Guideline";
-import {ConstraintAnchor, ConstraintAnchorType} from "./ConstraintAnchor"
-import {AttrMap} from "../../styles/style";
-import {ConstraintLayout} from "./constraint_layout";
-import {Layout} from "../layout";
+import {Measure, Measurer as BasicMeasurer} from "./ConstraintWidget"
+import {Guideline} from "./ConstraintWidget";
+import {ConstraintAnchorType} from "./ConstraintAnchor"
+import {ConstraintLayout} from "../constraint_layout";
+import {Component} from "../../../components/Props";
 
 export class LayoutParams {
     static readonly MATCH_PARENT = -1
@@ -88,28 +85,28 @@ export class LayoutParams {
     public guidelineUseRtl = true;
 
 
-    public leftToLeft = LayoutParams.UNSET;
+    public leftToLeft: number | string = LayoutParams.UNSET;
 
 
-    public leftToRight = LayoutParams.UNSET;
+    public leftToRight: number | string = LayoutParams.UNSET;
 
 
-    public rightToLeft = LayoutParams.UNSET;
+    public rightToLeft: number | string = LayoutParams.UNSET;
 
 
-    public rightToRight = LayoutParams.UNSET;
+    public rightToRight: number | string = LayoutParams.UNSET;
 
 
-    public topToTop = LayoutParams.UNSET;
+    public topToTop: number | string = LayoutParams.UNSET;
 
 
-    public topToBottom = LayoutParams.UNSET;
+    public topToBottom: number | string = LayoutParams.UNSET;
 
 
-    public bottomToTop = LayoutParams.UNSET;
+    public bottomToTop: number | string = LayoutParams.UNSET;
 
 
-    public bottomToBottom = LayoutParams.UNSET;
+    public bottomToBottom: number | string = LayoutParams.UNSET;
 
 
     public baselineToBaseline = LayoutParams.UNSET;
@@ -254,10 +251,10 @@ export class LayoutParams {
     mIsInPlaceholder = false;
     mIsVirtualGroup = false;
 
-    mResolvedLeftToLeft = LayoutParams.UNSET;
-    mResolvedLeftToRight = LayoutParams.UNSET;
-    mResolvedRightToLeft = LayoutParams.UNSET;
-    mResolvedRightToRight = LayoutParams.UNSET;
+    mResolvedLeftToLeft: number | string = LayoutParams.UNSET;
+    mResolvedLeftToRight: number | string = LayoutParams.UNSET;
+    mResolvedRightToLeft: number | string = LayoutParams.UNSET;
+    mResolvedRightToRight: number | string = LayoutParams.UNSET;
     mResolveGoneLeftMargin = LayoutParams.GONE_UNSET;
     mResolveGoneRightMargin = LayoutParams.GONE_UNSET;
     mResolvedHorizontalBias = 0.5;
@@ -317,6 +314,16 @@ export class LayoutParams {
         this.topToBottom = source.topToBottom;
         this.bottomToTop = source.bottomToTop;
         this.bottomToBottom = source.bottomToBottom;
+
+        this.mResolvedLeftToLeft = source.leftToLeft;
+        this.mResolvedLeftToRight = source.leftToRight;
+        this.mResolvedRightToLeft = source.rightToLeft;
+        this.mResolvedRightToRight = source.rightToRight;
+        // this.mResolvedTopToTop = source.topToTop;
+        // this.mResolvedTopToBottom = source.topToBottom;
+        // this.mResolvedBottomToTop = source.bottomToTop;
+        // this.mResolvedVottomToBottom = source.bottomToBottom;
+
         // this.baselineToBaseline = source.baselineToBaseline;
         // this.baselineToTop = source.baselineToTop;
         // this.baselineToBottom = source.baselineToBottom;
@@ -453,55 +460,130 @@ const MATCH_PARENT = LayoutParams.MATCH_PARENT
 const WRAP_CONTENT = LayoutParams.WRAP_CONTENT
 
 export class ConstraintSystem {
-    private id: number
-    private layoutParams: ConstraintLayout.LayoutParams
-    private children = new Array<ConstraintWidget>()
-    private idMappedWidgets = new Map<number, ConstraintWidget>()
-    private idMappedLayoutParams = new Map<number, LayoutParams>()
+    private parentId: string
+    private ids: string[] = []
+    private widgets: ConstraintWidget[] = []
+    private layoutParams: ConstraintLayout.LayoutParams[] = []
+    private systemParams: LayoutParams[] = []
+    private measurer: Measurer
 
     private mLastMeasureWidth = 0
     private mLastMeasureHeight = 0
 
+    constructor(parent: Component, children: Component[]) {
+        console.log("system constructed")
 
-    mMeasurer: Measurer// = new Measurer(this)
-    mLayoutWidget: ConstraintWidgetContainer = new ConstraintWidgetContainer()
-
-    constructor(id: number, params: ConstraintLayout.LayoutParams, idMappedParams: Map<number, ConstraintLayout.LayoutParams>) {
-        this.id = id
-        this.layoutParams = params
-
-        const ids = Array.from(idMappedParams.keys())
-
-        const widgetToLayoutParams = new Map<ConstraintWidget, LayoutParams>()
-
-        for (let i = 0; i < idMappedParams.size; i++) {
-            const id = ids[i]
-            const params = idMappedParams.get(id)!
-            const lp = new LayoutParams(params)
-
-            this.idMappedLayoutParams.set(id, lp)
-            this.idMappedWidgets.set(id, lp.mWidget)
-            widgetToLayoutParams.set(lp.mWidget, lp)
+        let parentId: string
+        // validate ids
+        if (!parent.id) {
+            parentId = `parent${Date.now()}`
         }
 
-        this.mMeasurer = new Measurer(this, this.layoutParams, widgetToLayoutParams)
+        this.parentId = parentId!
+        this.ids.push(parentId!)
+
+        const layoutParams = parent.layoutParams! as ConstraintLayout.LayoutParams
+        const systemParams = new LayoutParams(layoutParams)
+
+        this.layoutParams.push(layoutParams)
+        this.systemParams.push(systemParams)
+        this.measurer = new Measurer(this, layoutParams)
+        this.initSelf()
+
+        let parentWidget = this.getParentWidget() as ConstraintWidgetContainer
+
+        for (let child of children) {
+            let id = child.id!
+
+            let layoutParams = child.layoutParams as ConstraintLayout.LayoutParams
+            let systemParams = new LayoutParams(layoutParams)
+
+            let width = layoutParams.width
+            let height = layoutParams.height
+
+            let widget = new ConstraintWidget(width, height)
+            this.ids.push(id)
+            this.widgets.push(widget)
+            this.layoutParams.push(layoutParams)
+            this.systemParams.push(systemParams)
+
+            parentWidget.add(widget)
+        }
+    }
+
+    getWidgets() {
+        const map = new Map<ConstraintWidget, LayoutParams>()
+
+        const count = this.ids.length
+
+        for (let i = 0; i < count; i++) {
+            let w = this.widgets[i]
+            let s = this.systemParams[i]
+
+            map.set(w, s)
+        }
+
+        return map
+    }
+
+    getWidget(id: string | number) {
+        let index
+
+        if (typeof id === "number") {
+            if (id === -4) {
+                index = 0
+            } else {
+                index = id
+            }
+        } else {
+            index = this.ids.indexOf(id)
+        }
+
+        return this.widgets[index]
+    }
+
+    getParentWidget() {
+        return this.getWidget(this.parentId)
+    }
+
+    getLayoutParams(id: string) {
+        const index = this.ids.indexOf(id)
+
+        return this.layoutParams[index]
+    }
+
+    getParentLayoutParams() {
+        return this.getLayoutParams(this.parentId)
+    }
+
+    getSystemParams(id: string) {
+        const index = this.ids.indexOf(id)
+
+        return this.systemParams[index]
+    }
+
+    getParentSystemParams() {
+        return this.getSystemParams(this.parentId)
     }
 
     applyConstraints() {
-        for (let i = 0; i < this.idMappedWidgets.size; i++) {
-            const widget = this.children[i]
+        console.log("start apply constraints", this.widgets)
+        let widgets = this.widgets
 
-            const layoutParams = this.getLayoutParams(widget)
+        for (let i = 1; i < widgets.length; i++) {
+            const widget = widgets[i] //this.children[i]
 
-            if (layoutParams == null) {
+            const systemParams = this.systemParams[i]
+
+            if (systemParams == null) {
                 continue
             }
 
-            if (layoutParams.mIsGuideline) {
+            if (systemParams.mIsGuideline) {
                 let guideline = widget as Guideline
-                let resolvedGuideBegin = layoutParams.mResolvedGuideBegin;
-                let resolvedGuideEnd = layoutParams.mResolvedGuideEnd;
-                let resolvedGuidePercent = layoutParams.mResolvedGuidePercent;
+                let resolvedGuideBegin = systemParams.mResolvedGuideBegin;
+                let resolvedGuideEnd = systemParams.mResolvedGuideEnd;
+                let resolvedGuidePercent = systemParams.mResolvedGuidePercent;
 
                 if (resolvedGuidePercent != LayoutParams.UNSET) {
                     guideline.setGuidePercent(resolvedGuidePercent);
@@ -511,86 +593,86 @@ export class ConstraintSystem {
                     guideline.setGuideEnd(resolvedGuideEnd);
                 }
             } else {
-                let resolvedLeftToLeft = layoutParams.mResolvedLeftToLeft;
-                let resolvedLeftToRight = layoutParams.mResolvedLeftToRight;
-                let resolvedRightToLeft = layoutParams.mResolvedRightToLeft;
-                let resolvedRightToRight = layoutParams.mResolvedRightToRight;
-                let resolveGoneLeftMargin = layoutParams.mResolveGoneLeftMargin;
-                let resolveGoneRightMargin = layoutParams.mResolveGoneRightMargin;
-                let resolvedHorizontalBias = layoutParams.mResolvedHorizontalBias;
+                let resolvedLeftToLeft = systemParams.mResolvedLeftToLeft;
+                let resolvedLeftToRight = systemParams.mResolvedLeftToRight;
+                let resolvedRightToLeft = systemParams.mResolvedRightToLeft;
+                let resolvedRightToRight = systemParams.mResolvedRightToRight;
+                let resolveGoneLeftMargin = systemParams.mResolveGoneLeftMargin;
+                let resolveGoneRightMargin = systemParams.mResolveGoneRightMargin;
+                let resolvedHorizontalBias = systemParams.mResolvedHorizontalBias;
 
-                if (layoutParams.circleConstraint != LayoutParams.UNSET) {
-                    let target = this.idMappedWidgets.get(layoutParams.circleConstraint)
+                console.log("constraints", resolvedLeftToLeft, resolvedRightToRight, widget)
+
+                if (systemParams.circleConstraint != LayoutParams.UNSET) {
+                    let target = this.getWidget(systemParams.circleConstraint) //this.idMappedWidgets.get(systemParams.circleConstraint)
                     if (target != null) {
-                        widget.connectCircularConstraint(target, layoutParams.circleAngle, layoutParams.circleRadius)
+                        widget.connectCircularConstraint(target, systemParams.circleAngle, systemParams.circleRadius)
                     }
                 } else {
-
-
                     if (resolvedLeftToLeft != LayoutParams.UNSET) {
-                        let target = this.idMappedWidgets.get(resolvedLeftToLeft)
+                        let target = this.getWidget(resolvedLeftToLeft)
                         if (target != null) {
                             widget.immediateConnect(ConstraintAnchorType.LEFT, target,
-                                ConstraintAnchorType.LEFT, layoutParams.leftMargin,
+                                ConstraintAnchorType.LEFT, systemParams.leftMargin,
                                 resolveGoneLeftMargin);
                         }
                     } else if (resolvedLeftToRight != UNSET) {
-                        let target = this.idMappedWidgets.get(resolvedLeftToRight);
+                        let target = this.getWidget(resolvedLeftToRight);
                         if (target != null) {
                             widget.immediateConnect(ConstraintAnchorType.LEFT, target,
-                                ConstraintAnchorType.RIGHT, layoutParams.leftMargin,
+                                ConstraintAnchorType.RIGHT, systemParams.leftMargin,
                                 resolveGoneLeftMargin);
                         }
                     }
 
 
                     if (resolvedRightToLeft != LayoutParams.UNSET) {
-                        let target = this.idMappedWidgets.get(resolvedRightToLeft)
+                        let target = this.getWidget(resolvedRightToLeft)
                         if (target != null) {
                             widget.immediateConnect(ConstraintAnchorType.RIGHT, target,
-                                ConstraintAnchorType.LEFT, layoutParams.rightMargin,
+                                ConstraintAnchorType.LEFT, systemParams.rightMargin,
                                 resolveGoneRightMargin);
                         }
-                    } else if (resolvedLeftToRight != UNSET) {
-                        let target = this.idMappedWidgets.get(resolvedRightToRight);
+                    } else if (resolvedRightToRight != UNSET) {
+                        let target = this.getWidget(resolvedRightToRight);
                         if (target != null) {
-                            widget.immediateConnect(ConstraintAnchorType.LEFT, target,
-                                ConstraintAnchorType.RIGHT, layoutParams.rightMargin,
+                            widget.immediateConnect(ConstraintAnchorType.RIGHT, target,
+                                ConstraintAnchorType.RIGHT, systemParams.rightMargin,
                                 resolveGoneRightMargin);
                         }
                     }
 
 
-                    if (layoutParams.topToTop != UNSET) {
-                        let target = this.idMappedWidgets.get(layoutParams.topToTop);
+                    if (systemParams.topToTop != UNSET) {
+                        let target = this.getWidget(systemParams.topToTop);
                         if (target != null) {
                             widget.immediateConnect(ConstraintAnchorType.TOP, target,
-                                ConstraintAnchorType.TOP, layoutParams.topMargin,
-                                layoutParams.goneTopMargin);
+                                ConstraintAnchorType.TOP, systemParams.topMargin,
+                                systemParams.goneTopMargin);
                         }
-                    } else if (layoutParams.topToBottom != UNSET) {
-                        let target = this.idMappedWidgets.get(layoutParams.topToBottom);
+                    } else if (systemParams.topToBottom != UNSET) {
+                        let target = this.getWidget(systemParams.topToBottom);
                         if (target != null) {
                             widget.immediateConnect(ConstraintAnchorType.TOP, target,
-                                ConstraintAnchorType.BOTTOM, layoutParams.topMargin,
-                                layoutParams.goneTopMargin);
+                                ConstraintAnchorType.BOTTOM, systemParams.topMargin,
+                                systemParams.goneTopMargin);
                         }
                     }
 
 
-                    if (layoutParams.bottomToTop != UNSET) {
-                        let target = this.idMappedWidgets.get(layoutParams.bottomToTop);
+                    if (systemParams.bottomToTop != UNSET) {
+                        let target = this.getWidget(systemParams.bottomToTop);
                         if (target != null) {
                             widget.immediateConnect(ConstraintAnchorType.BOTTOM, target,
-                                ConstraintAnchorType.TOP, layoutParams.bottomMargin,
-                                layoutParams.goneBottomMargin);
+                                ConstraintAnchorType.TOP, systemParams.bottomMargin,
+                                systemParams.goneBottomMargin);
                         }
-                    } else if (layoutParams.bottomToBottom != UNSET) {
-                        let target = this.idMappedWidgets.get(layoutParams.bottomToBottom);
+                    } else if (systemParams.bottomToBottom != UNSET) {
+                        let target = this.getWidget(systemParams.bottomToBottom);
                         if (target != null) {
                             widget.immediateConnect(ConstraintAnchorType.BOTTOM, target,
-                                ConstraintAnchorType.BOTTOM, layoutParams.bottomMargin,
-                                layoutParams.goneBottomMargin);
+                                ConstraintAnchorType.BOTTOM, systemParams.bottomMargin,
+                                systemParams.goneBottomMargin);
                         }
                     }
 
@@ -598,63 +680,63 @@ export class ConstraintSystem {
                     if (resolvedHorizontalBias >= 0) {
                         widget.setHorizontalBiasPercent(resolvedHorizontalBias);
                     }
-                    if (layoutParams.verticalBias >= 0) {
-                        widget.setVerticalBiasPercent(layoutParams.verticalBias);
+                    if (systemParams.verticalBias >= 0) {
+                        widget.setVerticalBiasPercent(systemParams.verticalBias);
                     }
 
-                    if (!layoutParams.mHorizontalDimensionFixed) {
-                        if (layoutParams.width == MATCH_PARENT) {
-                            if (layoutParams.constrainedWidth) {
+                    if (!systemParams.mHorizontalDimensionFixed) {
+                        if (systemParams.width == MATCH_PARENT) {
+                            if (systemParams.constrainedWidth) {
                                 widget.setHorizontalDimensionBehaviour(DimensionBehaviour.MATCH_CONSTRAINT);
                             } else {
                                 widget.setHorizontalDimensionBehaviour(DimensionBehaviour.MATCH_PARENT);
                             }
-                            widget.getAnchor(ConstraintAnchorType.LEFT)!.mMargin = layoutParams.leftMargin;
-                            widget.getAnchor(ConstraintAnchorType.RIGHT)!.mMargin = layoutParams.rightMargin;
+                            widget.getAnchor(ConstraintAnchorType.LEFT)!.mMargin = systemParams.leftMargin;
+                            widget.getAnchor(ConstraintAnchorType.RIGHT)!.mMargin = systemParams.rightMargin;
                         } else {
                             widget.setHorizontalDimensionBehaviour(DimensionBehaviour.MATCH_CONSTRAINT);
                             widget.setWidth(0);
                         }
                     } else {
                         widget.setHorizontalDimensionBehaviour(DimensionBehaviour.FIXED);
-                        widget.setWidth(layoutParams.width);
-                        if (layoutParams.width == WRAP_CONTENT) {
+                        widget.setWidth(systemParams.width);
+                        if (systemParams.width == WRAP_CONTENT) {
                             widget.setHorizontalDimensionBehaviour(DimensionBehaviour.WRAP_CONTENT);
                         }
                     }
-                    if (!layoutParams.mVerticalDimensionFixed) {
-                        if (layoutParams.height == MATCH_PARENT) {
-                            if (layoutParams.constrainedHeight) {
+                    if (!systemParams.mVerticalDimensionFixed) {
+                        if (systemParams.height == MATCH_PARENT) {
+                            if (systemParams.constrainedHeight) {
                                 widget.setVerticalDimensionBehaviour(DimensionBehaviour.MATCH_CONSTRAINT);
                             } else {
                                 widget.setVerticalDimensionBehaviour(DimensionBehaviour.MATCH_PARENT);
                             }
-                            widget.getAnchor(ConstraintAnchorType.TOP)!.mMargin = layoutParams.topMargin;
-                            widget.getAnchor(ConstraintAnchorType.BOTTOM)!.mMargin = layoutParams.bottomMargin;
+                            widget.getAnchor(ConstraintAnchorType.TOP)!.mMargin = systemParams.topMargin;
+                            widget.getAnchor(ConstraintAnchorType.BOTTOM)!.mMargin = systemParams.bottomMargin;
                         } else {
                             widget.setVerticalDimensionBehaviour(DimensionBehaviour.MATCH_CONSTRAINT);
                             widget.setHeight(0);
                         }
                     } else {
                         widget.setVerticalDimensionBehaviour(DimensionBehaviour.FIXED);
-                        widget.setHeight(layoutParams.height);
-                        if (layoutParams.height == WRAP_CONTENT) {
+                        widget.setHeight(systemParams.height);
+                        if (systemParams.height == WRAP_CONTENT) {
                             widget.setVerticalDimensionBehaviour(DimensionBehaviour.WRAP_CONTENT);
                         }
                     }
 
-                    widget.setDimensionRatioString(layoutParams.dimensionRatio!);
-                    widget.setHorizontalWeight(layoutParams.horizontalWeight);
-                    widget.setVerticalWeight(layoutParams.verticalWeight);
-                    widget.setHorizontalChainStyle(layoutParams.horizontalChainStyle);
-                    widget.setVerticalChainStyle(layoutParams.verticalChainStyle);
-                    widget.setWrapBehaviorInParent(layoutParams.wrapBehaviorInParent);
-                    widget.setHorizontalMatchStyle(layoutParams.matchConstraintDefaultWidth,
-                        layoutParams.matchConstraintMinWidth, layoutParams.matchConstraintMaxWidth,
-                        layoutParams.matchConstraintPercentWidth);
-                    widget.setVerticalMatchStyle(layoutParams.matchConstraintDefaultHeight,
-                        layoutParams.matchConstraintMinHeight, layoutParams.matchConstraintMaxHeight,
-                        layoutParams.matchConstraintPercentHeight);
+                    widget.setDimensionRatioString(systemParams.dimensionRatio!);
+                    widget.setHorizontalWeight(systemParams.horizontalWeight);
+                    widget.setVerticalWeight(systemParams.verticalWeight);
+                    widget.setHorizontalChainStyle(systemParams.horizontalChainStyle);
+                    widget.setVerticalChainStyle(systemParams.verticalChainStyle);
+                    widget.setWrapBehaviorInParent(systemParams.wrapBehaviorInParent);
+                    widget.setHorizontalMatchStyle(systemParams.matchConstraintDefaultWidth,
+                        systemParams.matchConstraintMinWidth, systemParams.matchConstraintMaxWidth,
+                        systemParams.matchConstraintPercentWidth);
+                    widget.setVerticalMatchStyle(systemParams.matchConstraintDefaultHeight,
+                        systemParams.matchConstraintMinHeight, systemParams.matchConstraintMaxHeight,
+                        systemParams.matchConstraintPercentHeight);
                 }
             }
         }
@@ -664,30 +746,35 @@ export class ConstraintSystem {
         let widthMeasureSpec: number = 100
         let heightMeasureSpec: number = 100
 
-        this.mLayoutWidget.setRtl(this.isRtl())
-
+        this.applyConstraints()
         this.resolveSystem(widthMeasureSpec, heightMeasureSpec)
+
+        let w = this.widgets.map(it => it.getWidth()).join(", ")
+        console.log("wMeasured", w)
+
         // this.resolveMeasuredDimension(widthMeasureSpec, heightMeasureSpec,
         //     this.mLayoutWidget.getWidth(), this.mLayoutWidget.getHeight(),
         //     this.mLayoutWidget.isWidthMeasuredTooSmall(), this.mLayoutWidget.isHeightMeasuredTooSmall())
     }
 
     resolveSystem(widthMeasureSpec: number, heightMeasureSpec: number) {
+        let parentLayoutParams = this.getParentLayoutParams()
+
         let widthMode = MeasureSpec.getMode(widthMeasureSpec);
         let widthSize = MeasureSpec.getSize(widthMeasureSpec);
         let heightMode = MeasureSpec.getMode(heightMeasureSpec);
         let heightSize = MeasureSpec.getSize(heightMeasureSpec);
 
-        let paddingY = Math.max(0, this.layoutParams.paddingTop as number);
-        let paddingBottom = Math.max(0, this.layoutParams.paddingBottom as number);
+        let paddingY = Math.max(0, parentLayoutParams.paddingTop as number);
+        let paddingBottom = Math.max(0, parentLayoutParams.paddingBottom as number);
         let paddingHeight = paddingY + paddingBottom;
         let paddingWidth = this.getPaddingWidth();
         let paddingX;
-        this.mMeasurer.captureLayoutInfo(widthMeasureSpec, heightMeasureSpec, paddingY, paddingBottom,
+        this.measurer.captureLayoutInfo(widthMeasureSpec, heightMeasureSpec, paddingY, paddingBottom,
             paddingWidth, paddingHeight);
 
-        let paddingStart = Math.max(0, this.layoutParams.paddingStart);
-        let paddingEnd = Math.max(0, this.layoutParams.paddingEnd);
+        let paddingStart = Math.max(0, parentLayoutParams.paddingStart);
+        let paddingEnd = Math.max(0, parentLayoutParams.paddingEnd);
         if (paddingStart > 0 || paddingEnd > 0) {
             if (this.isRtl()) {
                 paddingX = paddingEnd;
@@ -695,74 +782,118 @@ export class ConstraintSystem {
                 paddingX = paddingStart;
             }
         } else {
-            paddingX = Math.max(0, this.layoutParams.paddingLeft)
+            paddingX = Math.max(0, parentLayoutParams.paddingLeft)
         }
 
         widthSize -= paddingWidth
         heightSize -= paddingHeight
 
-        this.setSelfDimensionBehaviour(this.mLayoutWidget, widthMode, widthSize, heightMode, heightSize)
+        let parentWidget = this.getParentWidget() as ConstraintWidgetContainer
 
-        this.mLayoutWidget.measure(Optimizer.OPTIMIZATION_STANDARD, widthMode, widthSize, heightMode, heightSize,
+        this.setSelfDimensionBehaviour(parentWidget, widthMode, widthSize, heightMode, heightSize)
+
+        parentWidget.measure(Optimizer.OPTIMIZATION_STANDARD, widthMode, widthSize, heightMode, heightSize,
             this.mLastMeasureWidth, this.mLastMeasureHeight, paddingX, paddingY)
+
+        let l = parentWidget.getChildren().map(it => it.mLeft.getFinalValue().toString()).join(", ")
+        let r = parentWidget.getChildren()[0].mRight
+
+        console.log("right", r)
+
     }
 
-    // protected resolveMeasuredDimension(widthMeasureSpec: number, heightMeasureSpec: number, measuredWidth: number, measuredHeight: number,
-    //                                    isWidthMeasuredTooSmall: boolean, isHeightMeasuredTooSmall: boolean) {
-    //     let childState = 0;
-    //     let heightPadding = this.mMeasurer.mPaddingHeight;
-    //     let widthPadding = this.mMeasurer.mPaddingWidth;
-    //
-    //     let androidLayoutWidth = measuredWidth + widthPadding;
-    //     let androidLayoutHeight = measuredHeight + heightPadding;
-    //
-    //     let resolvedWidthSize = this.resolveSizeAndState(androidLayoutWidth,
-    //         widthMeasureSpec, childState);
-    //     let resolvedHeightSize = this.resolveSizeAndState(androidLayoutHeight, heightMeasureSpec,
-    //         childState << MEASURED_HEIGHT_STATE_SHIFT);
-    //     resolvedWidthSize &= MEASURED_SIZE_MASK;
-    //     resolvedHeightSize &= MEASURED_SIZE_MASK;
-    //     resolvedWidthSize = Math.min(this.layoutParams.maxWidth, resolvedWidthSize);
-    //     resolvedHeightSize = Math.min(this.layoutParams.maxHeight, resolvedHeightSize);
-    //     if (isWidthMeasuredTooSmall) {
-    //         resolvedWidthSize ||= MEASURED_STATE_TOO_SMALL;
-    //     }
-    //     if (isHeightMeasuredTooSmall) {
-    //         resolvedHeightSize ||= MEASURED_STATE_TOO_SMALL;
-    //     }
-    //     this.setMeasuredDimension(resolvedWidthSize, resolvedHeightSize);
-    //     this.mLastMeasureWidth = resolvedWidthSize;
-    //     this.mLastMeasureHeight = resolvedHeightSize;
-    // }
+    initSelf() {
+        const params = this.getParentLayoutParams()
 
-    // resolveSizeAndState (size: number, measureSpec: number, childMeasuredState: number) {
-    //     const specMode = MeasureSpec.getMode(measureSpec);
-    //     const specSize = MeasureSpec.getSize(measureSpec);
-    //     let result;
-    //     switch (specMode) {
-    //         case MeasureSpec.AT_MOST:
-    //             if (specSize < size) {
-    //                 result = specSize | MEASURED_STATE_TOO_SMALL;
-    //             } else {
-    //                 result = size;
-    //             }
-    //             break;
-    //         case MeasureSpec.EXACTLY:
-    //             result = specSize;
-    //             break;
-    //         case MeasureSpec.UNSPECIFIED:
-    //         default:
-    //             result = size;
-    //     }
-    //     return result | (childMeasuredState & MEASURED_STATE_MASK);
-    // }
+        const width = params.width
+        const height = params.height
+        const minWidth = params.minWidth
+        const minHeight = params.minHeight
+        let maxWidth = params.maxWidth
+        let maxHeight = params.maxHeight
+
+        const paddingLeft = params.paddingLeft
+        const paddingTop = params.paddingTop
+        const paddingRight = params.paddingRight
+        const paddingBottom = params.paddingBottom
+
+        let paddedWidth = width
+        let paddedHeight = height
+
+        let desiredWidth = 0
+        let desiredHeight = 0
+
+        let widthBehaviour = DimensionBehaviour.FIXED
+        let heightBehaviour = DimensionBehaviour.FIXED
+
+        // width
+        if (width === WRAP_CONTENT) {
+            widthBehaviour = DimensionBehaviour.WRAP_CONTENT
+
+            if (this.getChildCount() === 0) {
+                desiredWidth = Math.max(0, minWidth)
+            }
+        } else { // MATCH_PARENT or EXACTLY
+            paddedWidth = width - (paddingLeft + paddingRight)
+
+            if (maxWidth == UNSET) {
+                maxWidth = Number.MAX_SAFE_INTEGER
+            }
+
+            desiredWidth = Math.min(maxWidth - paddedWidth, width)
+        }
+
+        // height
+        if (height === WRAP_CONTENT) {
+            heightBehaviour = DimensionBehaviour.WRAP_CONTENT
+            if (this.getChildCount() === 0) {
+                desiredHeight = Math.max(0, minHeight)
+            }
+        } else { // MATCH_PARENT or EXACTLY
+            paddedHeight = height - (paddingTop + paddingBottom)
+
+            if (maxWidth == UNSET) {
+                maxHeight = Number.MAX_SAFE_INTEGER
+            }
+
+            desiredHeight = Math.min(maxHeight - paddedHeight, height)
+        }
+
+        // this.mLayoutWidget = new ConstraintWidgetContainer()
+        // const layout = this.mLayoutWidget
+
+        const layout = new ConstraintWidgetContainer()
+        layout.setMeasurer(this.measurer)
+        layout.setRtl(this.isRtl())
+
+        layout.setX(0);
+        layout.setY(0);
+        layout.setMaxWidth(params.maxWidth - paddedWidth);
+        layout.setMaxHeight(params.maxHeight - paddedHeight);
+        layout.setMinWidth(0);
+        layout.setMinHeight(0);
+        layout.setHorizontalDimensionBehaviour(widthBehaviour);
+        layout.setVerticalDimensionBehaviour(heightBehaviour);
+        layout.setWidth(desiredWidth);
+        layout.setHeight(desiredHeight);
+        layout.setMinWidth(params.minWidth - paddedWidth);
+        layout.setMinHeight(params.minHeight - paddedHeight);
+
+        if (this.ids.includes(this.parentId)) {
+            const i = this.ids.indexOf(this.parentId)
+            this.widgets[i] = layout
+        } else {
+            this.widgets.unshift(layout)
+        }
+    }
 
     setSelfDimensionBehaviour(layout: ConstraintWidgetContainer,
                               widthMode: number, widthSize: number,
                               heightMode: number, heightSize: number) {
+        let parentLayoutParams = this.getParentLayoutParams()
 
-        let heightPadding = this.mMeasurer.mPaddingHeight;
-        let widthPadding = this.mMeasurer.mPaddingWidth;
+        let heightPadding = this.measurer.mPaddingHeight;
+        let widthPadding = this.measurer.mPaddingWidth;
 
         let widthBehaviour = DimensionBehaviour.FIXED;
         let heightBehaviour = DimensionBehaviour.FIXED;
@@ -776,19 +907,19 @@ export class ConstraintSystem {
                 widthBehaviour = DimensionBehaviour.WRAP_CONTENT;
                 desiredWidth = widthSize;
                 if (childCount == 0) {
-                    desiredWidth = Math.max(0, this.layoutParams.minWidth);
+                    desiredWidth = Math.max(0, parentLayoutParams.minWidth);
                 }
             }
                 break;
             case MeasureSpec.UNSPECIFIED: {
                 widthBehaviour = DimensionBehaviour.WRAP_CONTENT;
                 if (childCount == 0) {
-                    desiredWidth = Math.max(0, this.layoutParams.minWidth);
+                    desiredWidth = Math.max(0, parentLayoutParams.minWidth);
                 }
             }
                 break;
             case MeasureSpec.EXACTLY: {
-                desiredWidth = Math.min(this.layoutParams.maxWidth - widthPadding, widthSize);
+                desiredWidth = Math.min(parentLayoutParams.maxWidth - widthPadding, widthSize);
             }
         }
 
@@ -797,76 +928,62 @@ export class ConstraintSystem {
                 heightBehaviour = DimensionBehaviour.WRAP_CONTENT;
                 desiredHeight = heightSize;
                 if (childCount == 0) {
-                    desiredHeight = Math.max(0, this.layoutParams.minHeight);
+                    desiredHeight = Math.max(0, parentLayoutParams.minHeight);
                 }
             }
                 break;
             case MeasureSpec.UNSPECIFIED: {
                 heightBehaviour = DimensionBehaviour.WRAP_CONTENT;
                 if (childCount == 0) {
-                    desiredHeight = Math.max(0, this.layoutParams.minHeight);
+                    desiredHeight = Math.max(0, parentLayoutParams.minHeight);
                 }
             }
                 break;
             case MeasureSpec.EXACTLY: {
-                desiredHeight = Math.min(this.layoutParams.maxHeight - heightPadding, heightSize);
+                desiredHeight = Math.min(parentLayoutParams.maxHeight - heightPadding, heightSize);
             }
         }
 
         if (desiredWidth != layout.getWidth() || desiredHeight != layout.getHeight()) {
             layout.invalidateMeasures();
         }
+
+        desiredWidth = 500
+        desiredHeight = 500
+
         layout.setX(0);
         layout.setY(0);
-        layout.setMaxWidth(this.layoutParams.maxWidth - widthPadding);
-        layout.setMaxHeight(this.layoutParams.maxHeight - heightPadding);
+        layout.setMaxWidth(parentLayoutParams.maxWidth - widthPadding);
+        layout.setMaxHeight(parentLayoutParams.maxHeight - heightPadding);
         layout.setMinWidth(0);
         layout.setMinHeight(0);
         layout.setHorizontalDimensionBehaviour(widthBehaviour);
         layout.setWidth(desiredWidth);
         layout.setVerticalDimensionBehaviour(heightBehaviour);
         layout.setHeight(desiredHeight);
-        layout.setMinWidth(this.layoutParams.minWidth - widthPadding);
-        layout.setMinHeight(this.layoutParams.minHeight - heightPadding);
+        layout.setMinWidth(parentLayoutParams.minWidth - widthPadding);
+        layout.setMinHeight(parentLayoutParams.minHeight - heightPadding);
     }
 
     isRtl() {
-        return this.layoutParams.isRtl
+        return this.getParentLayoutParams().isRtl
     }
 
     getChildCount() {
-        return this.idMappedWidgets.size
+        return this.ids.length - 1
     }
 
     getPaddingWidth() {
-        let widthPadding = Math.max(0, this.layoutParams.paddingLeft) + Math.max(0, this.layoutParams.paddingRight);
+        let parentLayoutParams = this.getParentLayoutParams()
+
+        let widthPadding = Math.max(0, parentLayoutParams.paddingLeft) + Math.max(0, parentLayoutParams.paddingRight);
         let rtlPadding = 0;
 
-        rtlPadding = Math.max(0, this.layoutParams.paddingStart) + Math.max(0, this.layoutParams.paddingEnd);
+        rtlPadding = Math.max(0, parentLayoutParams.paddingStart) + Math.max(0, parentLayoutParams.paddingEnd);
         if (rtlPadding > 0) {
             widthPadding = rtlPadding;
         }
         return widthPadding;
-    }
-
-    getWidget(id: number) {
-        if (id == this.id) {
-            return this.mLayoutWidget
-        }
-
-        return this.idMappedWidgets.get(id)!
-    }
-
-    getLayoutParams(child: ConstraintWidget) {
-        const id = Array.from(this.idMappedWidgets.keys()).find(it => this.idMappedWidgets.get(it) == child)
-
-        if (id) {
-            const params = this.idMappedLayoutParams.get(id)!
-
-            return params
-        }
-
-        return null
     }
 }
 
@@ -965,7 +1082,6 @@ export class MeasureSpec {
         const mode = this.getMode(measureSpec);
         let size = this.getSize(measureSpec);
         if (mode == MeasureSpec.UNSPECIFIED) {
-
             return this.makeMeasureSpec(size, MeasureSpec.UNSPECIFIED);
         }
         size += delta;
@@ -996,10 +1112,10 @@ class Measurer implements BasicMeasurer {
         this.mLayoutHeightSpec = heightSpec;
     }
 
-    constructor(l: ConstraintSystem, layoutParams: ConstraintLayout.LayoutParams, widgetMappedParams: Map<ConstraintWidget, LayoutParams>) {
+    constructor(l: ConstraintSystem, layoutParams: ConstraintLayout.LayoutParams) {
         this.mLayout = l;
         this.mLayoutParams = layoutParams
-        this.mWidgetToParams = widgetMappedParams
+        this.mWidgetToParams = l.getWidgets()
     }
 
     public measure(widget: ConstraintWidget, measure: Measure) {

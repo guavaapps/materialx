@@ -1,6 +1,4 @@
 import {ConstraintWidget, DimensionBehaviour} from "./ConstraintWidget";
-import {ConstraintWidgetContainer} from "./ConstraintWidgetContainer";
-import {Chain} from "./Chain";
 
 export class ChainHead {
     mFirst: null | ConstraintWidget = null
