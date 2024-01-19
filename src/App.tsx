@@ -1,17 +1,17 @@
-import React, {useMemo, useRef, useState} from 'react';
+import React, {useMemo} from 'react';
 import './App.scss';
 import {Statesheet} from "./mx/styles/statesheet";
-import {StyleAdapter, Theme, THEME_LIGHT} from "./mx/theme";
-import {CssUtils, Rect2, Shape, ShapeDrawable} from "./mx/styles/style";
-import {StatesheetHandler, TextView, useJoe} from "./mx/components/text_view";
+import {THEME_LIGHT} from "./mx/theme";
+import {Rect2, ShapeDrawable} from "./mx/styles/style";
+import {StatesheetHandler, useJoe} from "./mx/components/text_view";
 import {Styles} from "./mx/components/button/styles";
-import {Animation, Transition, TransitionHandler} from "./mx/transitions/transition";
+import {Transition} from "./mx/transitions/transition";
 import {useTransitionService} from "./mx/app/services";
-import {Ids} from "./mx/resources/id/Id";
 import {ConstraintLayout} from "./mx/layout/constraintLayout/constraint_layout";
-import {ConstraintSystem} from "./mx/layout/constraintLayout/system/ConstraintSystem";
 import {Component} from "./mx/components/Props";
-import {Arrays} from "./mx/layout/constraintLayout/system/utils";
+import {Metrics} from "./mx/layout/constraintLayout/system/Metrics";
+import {LinearSystem, Strength, SystemMetrics} from "./mx/layout/constraintLayout/system/unused/LinearSystem";
+import {Variable} from "./mx/layout/constraintLayout/system/unused/Variables";
 
 function TransitionTestComponent() {
     const transition: Transition = {
@@ -139,8 +139,47 @@ function App() {
             layoutParams: childLayoutParams2
         }
 
-        const system = new ConstraintSystem(parentView, [childView1, childView2])
-        system.measure()
+        // const system = new ConstraintSystem(parentView, [childView1, childView2])
+        // system.measure()
+
+        const system = new LinearSystem()
+
+        const left1 = new Variable(0, "left1")
+        const width1 = new Variable(0, "width1")
+
+        const left2 = new Variable(0, "left2")
+        const width2 = new Variable(0, "width2")
+
+        const pLeft = new Variable(0, "parentLeft")
+        const pRight = new Variable(0, "parentRight")
+
+        pLeft.value = 0
+        system.addStay(pLeft)
+        system.addStay(pRight, Strength.WEAK)
+
+        system.addConstraint(width1.equals(width2))
+        system.addConstraint(left1.equals(pLeft.plus(50)))
+        console.log("MARKER")
+        system.addConstraint(pLeft.plus(pRight).equals(left2.plus(width2).plus(50)))
+
+        system.addConstraint(left2.equals(left1.plus(width1).plus(100)))
+
+        system.addConstraint(width1.greaterThan(87))
+        system.addConstraint(width1.equals(87), Strength.STRONG)
+
+        system.addConstraint(width2.greaterThan(113))
+        system.addConstraint(width2.equals(113), Strength.STRONG)
+
+        // system.solve()
+
+        console.log("cs", left1.value, left2.value, width1.value, width2.value)
+
+        // const mid = new Variable(15)
+        // solver.addConstraint((left.plus(right)).equals(new Term(mid, 1).times(cm(2))))
+        // solver.addEditVariable(mid, Priority.HIGH)
+        //solver.flushUpdates()
+
+        Metrics.logAll()
 
         return "memo"
     }, [])
@@ -183,6 +222,10 @@ function App() {
             hello2
         </p>
     </div>)
+}
+
+class TestClass {
+
 }
 
 export default App;

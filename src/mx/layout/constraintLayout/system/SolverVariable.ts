@@ -6,6 +6,7 @@ import {ConstraintAnchor, ConstraintAnchorType} from "./ConstraintAnchor";
 import {Chain} from "./Chain";
 import {ConstraintWidget} from "./ConstraintWidget";
 import {SolverVariableValues} from "./SolverVariableValues";
+import {Metrics} from "./Metrics";
 
 export enum SolverVariableType {
     UNRESTRICTED,
@@ -62,7 +63,7 @@ export class ArrayRow implements Row {
 
         let addedVariable = false
 
-        if (this.mConstantValue != 0) {
+        if (this.mConstantValue !== 0) {
             s += this.mConstantValue;
             addedVariable = true;
         }
@@ -74,7 +75,7 @@ export class ArrayRow implements Row {
                 continue;
             }
             let amount = this.variables.getVariableValue(i);
-            if (amount == 0) {
+            if (amount === 0) {
                 continue;
             }
             let name = v.toString();
@@ -1704,13 +1705,19 @@ export class LinearSystem {
     }
 
     public addConstraint(row: ArrayRow) {
+        Metrics.start("LinearSystem.addConstraint")
+
         if (row == null) {
+            Metrics.addToTrace("LinearSystem.addConstraint", "rowIsNull", "")
             return;
         }
         if (this.mNumRows + 1 >= this.mMaxRows || this.mNumColumns + 1 >= this.mMaxColumns) {
             console.log("[APC] inc check")
 
+
             this.increaseTableSize();
+
+            Metrics.addToTrace("LinearSystem.addConstraint", "increased table size", `${this.mNumRows}x${this.mNumColumns}`)
 
             console.log("[APC] inc table size")
         }
@@ -1718,14 +1725,12 @@ export class LinearSystem {
         let added = false;
 
         if (!row.mIsSimpleDefinition) {
-            console.log("[APC] SimDef check")
-
             // TODO problem here
             row.updateFromSystem(this);
 
-            console.log("[APC] update from system")
-
             if (row.isEmpty()) {
+                Metrics.addToTrace("LinearSystem.addConstraint", "row is empty", "")
+
                 return;
             }
 
@@ -1767,15 +1772,15 @@ export class LinearSystem {
                 // Can happen if row resolves to nil
                 return;
             }
-
-
         }
 
-        console.log("[APC] is simpdef")
 
         if (!added) {
+            Metrics.addToTrace("LinearSystem.addConstraint", "row not added", `adding now - ${row}`)
             this.addRow(row);
         }
+
+        Metrics.end("LinearSystem.addConstraint")
     }
 
     private addRow(row: ArrayRow) {
@@ -1845,6 +1850,9 @@ export class LinearSystem {
     private optimize(goal: Row, b: boolean) {
         console.log("Linear System", this, this.mRows)
 
+        Metrics.start("LinearSystem.optimize")
+        Metrics.addToTrace("LinearSystem.optimize", "table", this.mRows)
+
         let done = false;
         let tries = 0;
         for (let i = 0; i < this.mNumColumns; i++) {
@@ -1889,7 +1897,7 @@ export class LinearSystem {
                     if (variable.mType === SolverVariableType.UNRESTRICTED) {
                         // skip unrestricted variables equations (to only look at Cs)
                         console.log("[skip] unrestricted")
-                        continue; //TODO changed
+                        //continue; //TODO changed
                     }
                     if (current.mIsSimpleDefinition) {
                         console.log("[skip] simple def")
@@ -1902,7 +1910,7 @@ export class LinearSystem {
                         // we want to pivot on
                         let a_j = current.variables.get(pivotCandidate);
 
-                        console.log("new a_j", a_j)
+                        console.log("[METRICS] new a_j", a_j)
 
                         if (a_j < 0) {
                             let value = -current.mConstantValue / a_j;
@@ -1942,6 +1950,10 @@ export class LinearSystem {
             } else {
             }
         }
+
+        Metrics.addToTrace("LinearSystem.optimize", "goal row", this.mGoal)
+
+        Metrics.end("LinearSystem.optimize")
 
         return tries
     }
