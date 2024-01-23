@@ -9,8 +9,7 @@ import {Transition} from "./mx/transitions/transition";
 import {useTransitionService} from "./mx/app/services";
 import {ConstraintLayout} from "./mx/layout/constraintLayout/constraint_layout";
 import {Component} from "./mx/components/Props";
-import {Metrics} from "./mx/layout/constraintLayout/system/Metrics";
-import {LinearSystem, Strength, SystemMetrics} from "./mx/layout/constraintLayout/system/unused/LinearSystem";
+import {LinearSystem, Strength} from "./mx/layout/constraintLayout/system/unused/LinearSystem";
 import {Variable} from "./mx/layout/constraintLayout/system/unused/Variables";
 
 function TransitionTestComponent() {
@@ -159,7 +158,6 @@ function App() {
 
         system.addConstraint(width1.equals(width2))
         system.addConstraint(left1.equals(pLeft.plus(50)))
-        console.log("MARKER")
         system.addConstraint(pLeft.plus(pRight).equals(left2.plus(width2).plus(50)))
 
         system.addConstraint(left2.equals(left1.plus(width1).plus(100)))
@@ -172,14 +170,12 @@ function App() {
 
         // system.solve()
 
-        console.log("cs", left1.value, left2.value, width1.value, width2.value)
+        console.log("cs", left1.value, left2.value, width1.value, width2.value, pRight.value)
 
         // const mid = new Variable(15)
         // solver.addConstraint((left.plus(right)).equals(new Term(mid, 1).times(cm(2))))
         // solver.addEditVariable(mid, Priority.HIGH)
         //solver.flushUpdates()
-
-        Metrics.logAll()
 
         return "memo"
     }, [])

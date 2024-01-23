@@ -1,6 +1,5 @@
 import {AbstractVariable, DummyVariable, ObjectiveVariable, SlackVariable, Variable} from "./Variables";
 import {AbstractConstraint, Constraint, EditConstraint, StayConstraint} from "./Constraints";
-import {Log} from "../../../../gutils/Log";
 
 export type ConstraintObject = EditConstraint | StayConstraint | Constraint
 export type VariableObject = Variable | DummyVariable | SlackVariable | ObjectiveVariable

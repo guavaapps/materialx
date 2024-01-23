@@ -3,7 +3,6 @@ import {ReactElement, RefObject, useState} from "react";
 import {Component} from "../../components/Props";
 import {AttrMap} from "../../styles/style";
 import {Rect} from "../../shapes/shapes";
-import {ConstraintSystem} from "./system/ConstraintSystem";
 import {Ids} from "../../resources/id/Id";
 const MATCH_PARENT = Layout.LayoutParams.MATCH_PARENT
 const WRAP_CONTENT = Layout.LayoutParams.WRAP_CONTENT
