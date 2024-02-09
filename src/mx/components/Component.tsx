@@ -9,17 +9,13 @@ import MATCH_PARENT = LayoutParams.MATCH_PARENT;
 import WRAP_CONTENT = LayoutParams.WRAP_CONTENT;
 import {Component as C} from "./ComponentParams";
 
-export const Component = forwardRef(function Component(params: ComponentUtils.ComponentParams, ref) {
+export const Component = forwardRef(function Component(params: ComponentUtils.ComponentParams, ref: React.ForwardedRef<any>) {
     const p = C.ComponentParams.withDefaults(params)
 
     const child = ComponentUtils.getChildren(params)[0]
-    const component = ComponentUtils.create(child)
+    // const component = ComponentUtils.create(child)
 
     const layoutParams = params as Layout.LayoutParams
-    // const theme = useTheme()
-    // const style = params.style
-
-    // const componentStyle = style === undefined ? theme as Style : Style.extend(style, theme)
 
     const [bounds, setBounds] = useState({
         width: 0, height: 0
@@ -30,75 +26,17 @@ export const Component = forwardRef(function Component(params: ComponentUtils.Co
     let declaredWidth: number | string = params.width ?? 0
     let declaredHeight: number | string = params.height ?? 0
 
-    console.log("declaredSize", declaredWidth, declaredHeight)
-
     if (params.width === MATCH_PARENT) {
         declaredWidth = "100%"
-    }
-    else if (params.width === WRAP_CONTENT) {
+    } else if (params.width === WRAP_CONTENT) {
         declaredWidth = "auto"
     }
 
     if (params.height === MATCH_PARENT) {
         declaredHeight = "100%"
-    }
-    else if (params.height === WRAP_CONTENT) {
+    } else if (params.height === WRAP_CONTENT) {
         declaredHeight = "auto"
     }
-
-    // const ref = useOnLayoutHandler((bounds) => {
-    //     const measuredWidth = bounds.width
-    //     const measuredHeight = bounds.height
-    //
-    //     let width = 0
-    //     let height = 0
-    //
-    //     if (layoutParams.width === WRAP_CONTENT) {
-    //         if (measuredWidth > layoutParams.minWidth!) {
-    //             if (measuredWidth < layoutParams.maxWidth!) {
-    //                 width = measuredWidth
-    //             } else {
-    //                 width = layoutParams.maxWidth!
-    //             }
-    //         } else {
-    //             width = layoutParams.minWidth!
-    //         }
-    //     } else {
-    //         if (layoutParams.width! > layoutParams.minWidth!) {
-    //             if (layoutParams.width! < layoutParams.maxWidth!) {
-    //                 width = layoutParams.width!
-    //             } else {
-    //                 width = layoutParams.maxWidth!
-    //             }
-    //         } else {
-    //             width = layoutParams.minWidth!
-    //         }
-    //     }
-    //
-    //     if (layoutParams.height === WRAP_CONTENT) {
-    //         if (measuredHeight > layoutParams.minHeight!) {
-    //             if (measuredHeight < layoutParams.maxHeight!) {
-    //                 height = measuredHeight
-    //             } else {
-    //                 height = layoutParams.maxHeight!
-    //             }
-    //         } else {
-    //             height = layoutParams.minHeight!
-    //         }
-    //     } else {
-    //         if (layoutParams.height! > layoutParams.minHeight!) {
-    //             if (layoutParams.height! < layoutParams.maxHeight!) {
-    //                 height = layoutParams.height!
-    //             } else {
-    //                 height = layoutParams.maxHeight!
-    //             }
-    //         } else {
-    //             height = layoutParams.minHeight!
-    //         }
-    //     }
-    //
-    //     setBounds({width: width, height: height})
-    // })
 
     const object: AttributeSet = {
         ...ComponentContainerLayoutObject,
@@ -117,20 +55,43 @@ export const Component = forwardRef(function Component(params: ComponentUtils.Co
     object.top = params.y ?? 0
     object.background = "#ff00ff10"
 
-    console.log("id", params.id)
-    console.log("object", object)
+    const x = params.x ?? 0
+    const y = params.y ?? 0
 
-    return ( // removed ref
-        <div id={params.id} ref={ref as React.RefObject<HTMLDivElement>} style={object}>
-            {component}
-        </div>
-    )
+    const component = ComponentUtils.createComponent(child, ref, x, y, declaredWidth, declaredHeight, params)
+
+    return (<>{component}</>)
+
+    // return ( // removed ref
+    //     <div id={params.id} ref={ref as React.RefObject<HTMLDivElement>} style={object}>
+    //         {component}
+    //     </div>
+    // )
 
 })
 
 export namespace ComponentUtils {
     export function getChildren(params: ComponentUtils.ComponentParams): ReactElement[] {
         return Array.isArray(params.children) ? params.children as ReactElement[] : [params.children] as ReactElement[]
+    }
+
+    export function createComponent(element: ReactElement, ref: React.ForwardedRef<HTMLElement>, x: number, y: number, width: number | string, height: number | string, params: ComponentParams) {
+        return React.Children.map(element, (e, i) => {
+            const params = e.props as ComponentUtils.ComponentParams
+            const object = {...ComponentLayoutObject} as CSSProperties
+
+            object.left = x
+            object.top = y
+            object.width = width
+            object.height = height
+            object.overflow = "hidden"
+
+            return React.cloneElement(e, {
+                id: params.id,
+                ref: ref,
+                style: {...object}
+            })
+        })
     }
 
     export function create(element: ReactElement) {
@@ -199,6 +160,7 @@ const ComponentLayoutObject = {
     display: "block",
     width: "100%",
     height: "100%",
-    position: "relative",
+    // position: "relative", // TODO changed this
+    position: "absolute",
     backgroundColor: "#0000ff10"
 }

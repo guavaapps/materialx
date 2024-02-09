@@ -18,10 +18,16 @@ function App() {
     console.log("START app")
 
     return (
-        <CoordinatorLayout id={"l1"} width={500} height={500}>
-            <Component id={"c1"} width={WRAP_CONTENT} height={50} x={10}>
-                <div>helloooooooooooooooo</div>
+        <CoordinatorLayout id={"l1"} width={500} height={WRAP_CONTENT}>
+            <Component id={"c1"} width={WRAP_CONTENT} height={100} x={10} y={20}>
+                <div>hello1</div>
             </Component>
+
+            <CoordinatorLayout id={"l2"} width={WRAP_CONTENT} height={WRAP_CONTENT} x={50} y={200}>
+                <Component id={"c2"} width={MATCH_PARENT} height={40} x={10}>
+                    <div>helloooooooooooooooo</div>
+                </Component>
+            </CoordinatorLayout>
         </CoordinatorLayout>
     )
 }
@@ -62,7 +68,6 @@ function App() {
             </Component>
         </CoordinatorLayout>
  */
-
 
 
 /*

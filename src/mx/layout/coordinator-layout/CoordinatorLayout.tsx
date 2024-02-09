@@ -7,6 +7,8 @@ import {LayoutParams} from "../LayoutParams";
 import WRAP_CONTENT = LayoutParams.WRAP_CONTENT;
 import {Rect} from "../Layout";
 import {AttributeSet} from "../../styles/Style";
+import {pseudoRandomBytes} from "node:crypto";
+import MATCH_PARENT = LayoutParams.MATCH_PARENT;
 
 export function CoordinatorLayout(params: ComponentUtils.ComponentParams) {
     const [width, setWidth] = useState(params.width ?? 0)
@@ -17,31 +19,37 @@ export function CoordinatorLayout(params: ComponentUtils.ComponentParams) {
     const ref = useMeasurer(
         params,
         params.children,
-        children => {
+        (children, bounds) => {
             if (params.width === WRAP_CONTENT) {
-                const wrapWidth = measureWrapWidth(children)
-                setWidth(wrapWidth)
+                console.log("wrap", params.id, canWrapWidth(children))
+
+                if (!canWrapWidth(children)) {
+                    setWidth(MATCH_PARENT)
+                }
+                else {
+                    const wrapWidth = measureWrapWidth(children, bounds)
+                    setWidth(wrapWidth)
+                }
             }
             if (params.height === WRAP_CONTENT) {
-                const wrapHeight = measureWrapHeight(children)
-                setHeight(wrapHeight)
+                if (canWrapHeight(children)) {
+                    setHeight(MATCH_PARENT)
+                }
+                else {
+                    const wrapHeight = measureWrapHeight(children, bounds)
+                    setHeight(wrapHeight)
+                }
             }
 
-            setMeasuredChildren(children)
+            // setMeasuredChildren(children)
         }
     )
 
-    // const positionedChildren = React.Children.map(measuredChildren, child => {
-    //     if (React.isValidElement(child)) {
-    //
-    //     }
-    // })
-
     const object = createParamsObject(params)
 
-    return (
-        <Component x={params.x} y={params.y} width={params.width} height={params.height} ref={ref}>
-            <div id={params.id} ref={ref as React.RefObject<HTMLDivElement>} style={object}>
+    return (//ref={ref as React.RefObject<HTMLDivElement>} style={object} on div
+        <Component id={params.id} x={params.x} y={params.y} width={width} height={height} ref={ref}>
+            <div>
                 {measuredChildren}
             </div>
         </Component>
@@ -54,20 +62,34 @@ function createParamsObject(params: ComponentUtils.ComponentParams) {
     obj.display = "block"
     obj.background = "#ff00ff80"
     obj.position = "absolute"
-    obj.width = params.width
-    obj.height = params.height
+    // obj.width = params.width
+    // obj.height = params.height
 
     return obj
 }
 
-function measureWrapWidth(children: ReactNode) {
+function canWrapWidth(children: ReactNode) {
+    return React.Children.toArray(children).find(it =>
+        React.isValidElement(it) && it.props.width !== MATCH_PARENT) === undefined
+}
+
+function canWrapHeight(children: ReactNode) {
+    return React.Children.toArray(children).find(it =>
+        React.isValidElement(it) && it.props.height !== MATCH_PARENT) === undefined
+}
+
+function measureWrapWidth(children: ReactNode, bounds: Rect[]) {
     let maxBound = 0
 
-    for (let child of children as ReactElement[]) {
+    const c = children as ReactElement[]
+    const count = c.length
+    for (let i = 0; i < count; i++) {
+        const child = c[i]
         const childParams = child.props as ComponentUtils.ComponentParams
+        const b = bounds[i]
 
         const x = childParams.x ?? 0
-        const width = childParams.width ?? 0
+        const width = b.width//childParams.width ?? 0
 
         const bound = x + width
 
@@ -79,14 +101,18 @@ function measureWrapWidth(children: ReactNode) {
     return maxBound
 }
 
-function measureWrapHeight(children: ReactNode) {
+function measureWrapHeight(children: ReactNode, bounds: Rect[]) {
     let maxBound = 0
 
-    for (let child of children as ReactElement[]) {
+    const c = children as ReactElement[]
+    const count = c.length
+    for (let i = 0; i < count; i++) {
+        const child = c[i]
         const childParams = child.props as ComponentUtils.ComponentParams
+        const b = bounds[i]
 
         const y = childParams.y ?? 0
-        const height = childParams.height ?? 0
+        const height = b.height//childParams.height ?? 0
 
         const bound = y + height
 

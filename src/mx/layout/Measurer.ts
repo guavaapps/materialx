@@ -20,9 +20,9 @@ export namespace Measurer {
                                                 | ReactFragment,
                                             bounds: Rect[]) => void
     ) {
-        const components = children as ReactElement[]
-
         const ref = useOnLayoutHandler(bounds => {
+            const components: ReactElement[] = Array.isArray(children) ? children as ReactElement[] : [children] as ReactElement[]
+
             if (!ref.current) return
 
             const c = ref.current.children
@@ -31,13 +31,8 @@ export namespace Measurer {
             const componentParams: ComponentUtils.ComponentParams[] = []
             const componentBounds: Rect[] = []
 
-            console.log("c", c.length, components.length)
-
             for (let child of c) {
-                console.log("child", child)
                 const measuredBounds = child.getBoundingClientRect()
-
-                console.log("measuredBounds", child.id, measuredBounds)
 
                 childMeasuredBounds.push({
                     width: measuredBounds.width,
@@ -46,7 +41,6 @@ export namespace Measurer {
             }
 
             for (let i = 0; i < components.length; i++) {
-                console.log("component", components[i])
                 const component = components[i].props as ComponentUtils.ComponentParams
 
                 const minWidth = component.minWidth ?? 0
@@ -64,8 +58,6 @@ export namespace Measurer {
                 if (declaredWidth === MATCH_PARENT) {
                     width = Numbers.inRange(bounds.width, minWidth, maxWidth)
                 } else if (declaredWidth === WRAP_CONTENT) {
-                    console.log("widthIsWrapContent")
-
                     width = Numbers.inRange(childMeasuredBounds[i].width, minWidth, maxWidth)
                 }
 

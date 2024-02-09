@@ -19,6 +19,7 @@ export function useOnLayoutHandler(callback: (bounds: Rect) => any) {
         }
 
         updateRef(ref.current)
+
         callback(bounds)
     }, [r])
 
