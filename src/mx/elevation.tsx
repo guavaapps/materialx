@@ -1,4 +1,4 @@
-import {Argb} from "./ui/color/Argb";
+import {Argb} from "./color/argb/Argb";
 
 export class Elevation {
     static level0 = 0

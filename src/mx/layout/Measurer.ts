@@ -1,96 +1,102 @@
-import React, {ReactElement} from "react";
-import ReactDOM from "react-dom/client";
-import {Layout} from "./layout";
-import {Rect} from "../shapes/shapes";
+import {Rect, useOnLayoutHandler} from "./Layout";
+import React, {ReactElement, ReactFragment, ReactNode, useState} from "react";
+import {ComponentUtils} from "../components/Component";
+import {LayoutParams} from "./LayoutParams";
+import {Numbers} from "../../guava-utils/Numbers";
 
+export namespace Measurer {
+    import MATCH_PARENT = LayoutParams.MATCH_PARENT;
+    import WRAP_CONTENT = LayoutParams.WRAP_CONTENT;
 
-const MATCH_PARENT = Layout.LayoutParams.MATCH_PARENT
-const WRAP_CONTENT = Layout.LayoutParams.WRAP_CONTENT
-const UNSET = Layout.LayoutParams.UNSET
+    const LAYOUT = ["CoordinatorLayout", "LinearLayout", "ConstraintLayout"]
 
-export class Measurer {
-    private static sFragment: DocumentFragment
-    private static sLayout: ReactDOM.Root
+    export function useMeasurer(parentParams: ComponentUtils.ComponentParams, children: ReactNode,
+                                onMeasure: (children: React.ReactElement<unknown, string
+                                                    | React.JSXElementConstructor<any>>
+                                                | number
+                                                | string
+                                                | undefined
+                                                | null
+                                                | ReactFragment,
+                                            bounds: Rect[]) => void
+    ) {
+        const components = children as ReactElement[]
 
-    constructor(widthMeasureSpec: number, heightMeasureSpec: number) {
-        if (Measurer.sLayout === null || Measurer.sFragment === null) {
-            const fragment = document.createDocumentFragment()
-            const root = ReactDOM.createRoot(fragment)
+        const ref = useOnLayoutHandler(bounds => {
+            if (!ref.current) return
 
-            Measurer.sFragment = fragment
-            Measurer.sLayout = root
-        }
-    }
+            const c = ref.current.children
+            const childMeasuredBounds: Rect[] = []
 
-    private getViewBounds (view: ReactElement) {
-        Measurer.sLayout.render(view)
-        const rect = Measurer.sFragment.children.item(0)!.getBoundingClientRect()
+            const componentParams: ComponentUtils.ComponentParams[] = []
+            const componentBounds: Rect[] = []
 
-        return {
-            width: rect.width,
-            height: rect.height
-        } as Rect
-    }
+            console.log("c", c.length, components.length)
 
-    measure(view: ReactElement, params: Layout.LayoutParams) {
-        let [widthMeasureSpec, heightMeasureSpec] = MeasureSpec.get(params)
+            for (let child of c) {
+                console.log("child", child)
+                const measuredBounds = child.getBoundingClientRect()
 
-        let measuredBounds: Rect = {
-            width: params.width,
-            height: params.height
-        }
+                console.log("measuredBounds", child.id, measuredBounds)
 
-        if (widthMeasureSpec == MeasureSpec.UNSPECIFIED || widthMeasureSpec == MeasureSpec.AT_MOST) {
-            measuredBounds = this.getViewBounds(view)
-
-            if (widthMeasureSpec == MeasureSpec.AT_MOST) {
-                measuredBounds.width = Math.min(params.maxWidth, measuredBounds.width)
-            }
-        }
-
-        if (widthMeasureSpec == MeasureSpec.UNSPECIFIED || widthMeasureSpec == MeasureSpec.AT_MOST) {
-            if (!measuredBounds) {
-                measuredBounds = this.getViewBounds(view)
+                childMeasuredBounds.push({
+                    width: measuredBounds.width,
+                    height: measuredBounds.height
+                })
             }
 
-            if (widthMeasureSpec == MeasureSpec.AT_MOST) {
-                measuredBounds.height = Math.min(params.maxHeight, measuredBounds.height)
+            for (let i = 0; i < components.length; i++) {
+                console.log("component", components[i])
+                const component = components[i].props as ComponentUtils.ComponentParams
+
+                const minWidth = component.minWidth ?? 0
+                const minHeight = component.minHeight ?? 0
+
+                const maxWidth = component.maxWidth ?? Number.MAX_VALUE
+                const maxHeight = component.maxHeight ?? Number.MAX_VALUE
+
+                const declaredWidth = component.width ?? 0
+                const declaredHeight = component.height ?? 0
+
+                let width = declaredWidth
+                let height = declaredHeight
+
+                if (declaredWidth === MATCH_PARENT) {
+                    width = Numbers.inRange(bounds.width, minWidth, maxWidth)
+                } else if (declaredWidth === WRAP_CONTENT) {
+                    console.log("widthIsWrapContent")
+
+                    width = Numbers.inRange(childMeasuredBounds[i].width, minWidth, maxWidth)
+                }
+
+                if (declaredHeight === MATCH_PARENT) {
+                    height = Numbers.inRange(bounds.height, minHeight, maxHeight)
+                } else if (declaredHeight === WRAP_CONTENT) {
+                    height = Numbers.inRange(childMeasuredBounds[i].height, minHeight, maxHeight)
+                }
+
+                const measuredParams = {...component}
+                measuredParams.width = width
+                measuredParams.height = height
+
+                componentParams.push(measuredParams)
+                componentBounds.push({
+                    width: width,
+                    height: height
+                })
             }
-        }
 
-        return measuredBounds
-    }
-}
+            const newChildren = React.Children
+                .map(children, (child, i) => {
+                    if (React.isValidElement(child)) {
+                        return React.cloneElement(child, componentParams[i])
+                    }
+                    return child
+                })
 
-export class MeasureSpec {
-    static readonly UNSPECIFIED = 0
-    static readonly EXACTLY = 1
-    static readonly AT_MOST = 2
+            onMeasure(newChildren, componentBounds)
+        })
 
-    static get(layoutParams: Layout.LayoutParams) {
-        let w
-        let h
-
-        if (layoutParams.width == WRAP_CONTENT) {
-            if (layoutParams.maxWidth != UNSET) {
-                w = MeasureSpec.AT_MOST
-            } else {
-                w = MeasureSpec.UNSPECIFIED
-            }
-        } else {
-            w = MeasureSpec.EXACTLY
-        }
-
-        if (layoutParams.height == WRAP_CONTENT) {
-            if (layoutParams.maxHeight != UNSET) {
-                h = MeasureSpec.AT_MOST
-            } else {
-                h = MeasureSpec.UNSPECIFIED
-            }
-        } else {
-            h = MeasureSpec.EXACTLY
-        }
-
-        return [w, h]
+        return ref
     }
 }

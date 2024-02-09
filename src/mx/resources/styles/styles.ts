@@ -1,5 +1,5 @@
 import {state} from "../../values";
-import {Attr, Attrs} from "../../styles/style";
+import {Attr, Attrs} from "../../styles/Style";
 import add from "../../../add.svg"
 import checked from "../../../checked.svg"
 import ic_checked_icon from "../../res/drawable/ic_checked_icon.svg"
